@@ -1,6 +1,6 @@
 # irobot_infcollect
 
-requirements
+!requirements
 
 [1] irobot: check the ID of usb and add to ttyUSB0
 - lsusb to check ID
@@ -12,3 +12,6 @@ requirements
 
 [3] xg1010:
 - blabla
+
+
+!How to run
