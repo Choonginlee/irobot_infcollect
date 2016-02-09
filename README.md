@@ -8,7 +8,8 @@
 - dmesg | grep tty to check ttyUSB port
 
 [2] pgr camera: 
-- blabla
+- install libdc1394
+- libdc1394-2.2.4 source code can be acquired via 
 
 [3] xg1010:
 - blabla
