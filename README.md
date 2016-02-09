@@ -8,8 +8,7 @@
 - dmesg | grep tty to check ttyUSB port
 
 [2] pgr camera: 
-- install libdc1394
-- libdc1394-2.2.4 source code can be acquired via http://sourceforge.net/projects/libdc1394/
+- install flycapture https://www.ptgrey.com/support/downloads
 
 [3] xg1010:
 - blabla
