@@ -8,6 +8,7 @@ requirements
 - dmesg | grep tty to check ttyUSB port
 
 2. pgr camera: 
+- blabla
 
 3. xg1010:
-
+- blabla
