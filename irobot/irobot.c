@@ -44,10 +44,14 @@ void start(int fd);
 void quit(int fd);		// stop OI
 void clean(int fd);
 void drive(int fd);
-void forward(int fd, int distance);
-void reverse(int fd, int distance);
+void forward(int fd);
+void forward_d(int fd, int distance);
+void reverse(int fd);
+void reverse_d(int fd, int distance);
 void left(int fd);
+void left_a(int fd, int angle);
 void right(int fd);
+void right_a(int fd, int angle);
 void stop(int fd);		// stop driving
 void zigzag(int fd, int length, int width, int req_num_length);
 
@@ -190,13 +194,11 @@ void drive(int fd)
 	    switch(dir) { // the real value
 	        case 'A':
 	            // code for arrow up
-	        	forward(fd, 400);
-	        	stop(fd);
+	        	forward(fd);
 	            break;
 	        case 'B':
 	            // code for arrow down
-	        	reverse(fd, 400);
-	        	stop(fd);
+	        	reverse(fd);
 	            break;
 	        case 'C':
 	            // code for arrow right
@@ -219,7 +221,20 @@ void drive(int fd)
 	
 }
 
-void forward(int fd, int distance) // forward for distnace
+void forward(int fd) // forward straight
+{
+	char buf[5];
+
+	sprintf(buf, "%c%c%c%c%c",
+		DriveDirect,
+		(char)((speed_right>>8)&0xFF), (char)(speed_right&0xFF),
+		(char)((speed_left>>8)&0xFF), (char)(speed_left&0xFF));
+
+	printf("[+] Send msg : %s (Forward straight)\n", buf);
+	write(fd, buf, 5);
+}
+
+void forward_d(int fd, int distance) // forward for distnace
 {
 	char buf[5];
 	int waittime = 0;
@@ -229,7 +244,7 @@ void forward(int fd, int distance) // forward for distnace
 		(char)((speed_right>>8)&0xFF), (char)(speed_right&0xFF),
 		(char)((speed_left>>8)&0xFF), (char)(speed_left&0xFF));
 
-	printf("[+] Send msg : %s (Forward)\n", buf);
+	printf("[+] Send msg : %s (Forward for %d mm)\n", buf, distance);
 	write(fd, buf, 5);
 
 	// Time = Distance (mm) / Velocity (mm)
@@ -237,10 +252,22 @@ void forward(int fd, int distance) // forward for distnace
 	sleep(waittime);
 }
 
-void reverse(int fd, int distance) // backward for distance 
+void reverse(int fd) // backward straight
 {
 	char buf[5];
-	
+
+		sprintf(buf, "%c%c%c%c%c", 
+			DriveDirect,
+			(char)(((-speed_right)>>8)&0xFF), (char)((-speed_right)&0xFF), 
+			(char)(((-speed_left)>>8)&0xFF), (char)((-speed_left)&0xFF));
+
+	printf("[+] Send msg : %s (Backward straight)\n", buf);
+	write(fd, buf, 5);
+}
+
+void reverse_d(int fd, int distance) // backward for distance 
+{
+	char buf[5];
 	int waittime = 0;
 
 		sprintf(buf, "%c%c%c%c%c", 
@@ -248,7 +275,7 @@ void reverse(int fd, int distance) // backward for distance
 			(char)(((-speed_right)>>8)&0xFF), (char)((-speed_right)&0xFF), 
 			(char)(((-speed_left)>>8)&0xFF), (char)((-speed_left)&0xFF));
 
-	printf("[+] Send msg : %s (Backward)\n", buf);
+	printf("[+] Send msg : %s (Backward for %d mm)\n", buf, distance);
 	write(fd, buf, 5);
 
 	// Time = Distance (mm) / Velocity (mm)
@@ -269,6 +296,24 @@ void left(int fd)
 	write(fd, buf, 5);
 }
 
+void left_a(int fd, int angle)
+{
+	char buf[5];
+	int waittime = 0;
+
+		sprintf(buf, "%c%c%c%c%c", 
+			DriveDirect, 
+			(char)((speed_right>>8)&0xFF), (char)(speed_right&0xFF), 
+			(char)(((-speed_left)>>8)&0xFF), (char)((-speed_left)&0xFF));
+
+	printf("[+] Send msg : %s (Left for %d degree)\n", buf, angle);
+	write(fd, buf, 5);
+
+	// 200mm velocity : 90 degrees per sec
+	waittime = (int)(angle / 90);
+	sleep(waittime);
+}
+
 void right(int fd)
 {
 	char buf[5];
@@ -280,6 +325,24 @@ void right(int fd)
 
 	printf("[+] Send msg : %s (Right)\n", buf);
 	write(fd, buf, 5);
+}
+
+void right_a(int fd, int angle)
+{
+	char buf[5];
+	int waittime = 0;
+
+		sprintf(buf, "%c%c%c%c%c", 
+			DriveDirect, 
+			(char)(((-speed_right)>>8)&0xFF), (char)((-speed_right)&0xFF), 
+			(char)((speed_left>>8)&0xFF), (char)(speed_left&0xFF));
+
+	printf("[+] Send msg : %s (Right)\n", buf);
+	write(fd, buf, 5);
+
+	// 200mm velocity : 90 degrees per sec
+	waittime = (int)(angle / 90);
+	sleep(waittime);
 }
 
 void stop(int fd)
@@ -300,7 +363,6 @@ void stop(int fd)
 
 void zigzag(int fd, int length, int width, int req_num_length)
 {
-	char buf[10];
 	int num_length;
 
 	if(req_num_length < 1)
@@ -310,7 +372,7 @@ void zigzag(int fd, int length, int width, int req_num_length)
 
 	while(1)
 	{
-		forward(fd, length);
+		forward_d(fd, length);
 		num_length++;
 
 		// check num_length per every cycle after forward(length)
@@ -323,22 +385,16 @@ void zigzag(int fd, int length, int width, int req_num_length)
 		// if num_length is odd, turn left -> go 'width' -> turn left
 		if(num_length%2 == 1)
 		{
-			left(fd);
-			sleep(2);
-			forward(fd, width);
-			sleep(3);
-			left(fd);
-			sleep(2);
+			left_a(fd, 90);
+			forward_d(fd, width);
+			left_a(fd, 90);
 		}
 		// if num_length is even, turn right -> go 'width' -> turn right
 		else
 		{
-			right(fd);
-			sleep(2);
-			forward(fd, width);
-			sleep(3);
-			right(fd);
-			sleep(2);
+			right_a(fd, 90);
+			forward_d(fd, width);
+			right_a(fd, 90);
 		}
 	}
 }
