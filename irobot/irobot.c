@@ -54,13 +54,13 @@ void main()
 	int fd;		// Serial handler of irobot
 	struct termios serialio;
 	fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK);
-	/*
+	
 	if(fd < 0)
 	{
 		perror("/dev/ttyUSB0");
 		exit(-1);
 	}
-	*/
+	
 
 	memset( &serialio, 0, sizeof(serialio) );
 	serialio.c_cflag = B115200;   // baud - 115200 
