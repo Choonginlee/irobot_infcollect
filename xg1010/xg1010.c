@@ -49,7 +49,7 @@ int main()
 }
 
 // Get a data packet and parse it
-int ccr1050_getvalue()
+void ccr1050_getvalue()
 {
 	short header;
 	short rate_int;
@@ -60,14 +60,14 @@ int ccr1050_getvalue()
 	unsigned char data_packet[PACKET_SIZE];
 
 	if(PACKET_SIZE != read(fd, data_packet, PACKET_SIZE))
-		return 0;
+		return;
 
 	// Verify data packet header 
 	memcpy(&header, data_packet, sizeof(short));
 	if(header != (short)0xFFFF)
 	{
 		printf("Header error !!!\n");
-		return 0;
+		return;
 	}
 
 	// Copy values from data string 
@@ -79,7 +79,7 @@ int ccr1050_getvalue()
 	if(check_sum != (short)(0xFFFF + rate_int + angle_int))
 	{
 		printf("Checksum error!!\n");
-		return 0;
+		return;
 	}
 
 	// Apply scale factors
@@ -88,5 +88,5 @@ int ccr1050_getvalue()
 	
 	printf("rate_float: %f [deg/sec]\t angle_float : %f [deg]\n", rate_float, angle_float);
 
-	return 0;
+	return;
 }
