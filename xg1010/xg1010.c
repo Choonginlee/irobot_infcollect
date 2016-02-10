@@ -60,7 +60,10 @@ void ccr1050_getvalue()
 	unsigned char data_packet[PACKET_SIZE];
 
 	if(PACKET_SIZE != read(fd, data_packet, PACKET_SIZE))
+	{
+		printf("Not Valid Packet size\n");
 		return;
+	}
 
 	// Verify data packet header 
 	memcpy(&header, data_packet, sizeof(short));
