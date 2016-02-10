@@ -61,7 +61,7 @@ void ccr1050_getvalue()
 
 	if(PACKET_SIZE != read(fd, data_packet, PACKET_SIZE))
 	{
-		printf("Not Valid Packet size\n");
+		//printf("Not Valid Packet size\n");
 		return;
 	}
 
