@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -53,12 +54,13 @@ void main()
 	int fd;		// Serial handler of irobot
 	struct termios serialio;
 	fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK);
-	
+	/*
 	if(fd < 0)
 	{
 		perror("/dev/ttyUSB0");
 		exit(-1);
 	}
+	*/
 
 	memset( &serialio, 0, sizeof(serialio) );
 	serialio.c_cflag = B115200;   // baud - 115200 
@@ -160,39 +162,43 @@ void drive(int fd)
 {
 	char dir;
 
+	initscr();
+	cbreak();
+	//keypad(stdscr, TRUE);
+
 	printf("-- Moving Instruction --\n");
-	printf("[f] - Forward\t[b] - Backward\t[r] - Right\t[l] - Left\t[s] - Stop\n");
+	printf("[Up]-Forward\t[Down]-Backward\t[Right]-Right\t[Left]-Left\t[s] - Stop\n");
 
 	while(1)
 	{
-		dir = rcv_direction();
+	    dir = getch();
+	    //printf("[-] Input code : %c\n", dir);
 
-		if(dir == 'f' | dir == 'F')
-		{
-			forward(fd, 1000);
-		}
-		else if (dir == 'b' | dir == 'B')
-		{
-			reverse(fd, 1000);
-		}
-		else if (dir == 'r' | dir == 'R')
-		{
-			right(fd);
-		}
-		else if (dir == 'l' | dir == 'L')
-		{
-			left(fd);
-		}
-		else if (dir == 's' | dir == 'S')
-		{
-			stop(fd);
-			break;
-		}
-		else
-		{
-			printf("%c\n", dir);
-			printf("[-] Invlid input. See the instruction below\n");
-			printf("[f] - Forward\t[b] - Backward\t[r] - Right\t[l] - Left\t[s] - Stop\n");
+	    switch(dir) { // the real value
+	        case 'A':
+	            // code for arrow up
+	        	forward(fd, 1000);
+	            break;
+	        case 'B':
+	            // code for arrow down
+	        	reverse(fd, 1000);
+	            break;
+	        case 'C':
+	            // code for arrow right
+	        	right(fd);
+	            break;
+	        case 'D':
+	            // code for arrow left
+	        	left(fd);
+	            break;
+	        case ' ':
+	        	// code for spacebar
+	        	stop(fd);
+	        default:
+	        	//printf("[-] Input code : %c\n", dir);
+				//printf("[-] Invlid input. See the instruction below\n");
+				//printf("[Up]-Forward\t[Down]-Backward\t[Right]-Right\t[Left]-Left\t[s] - Stop\n");
+	        	continue;
 		}
 	}
 	
@@ -200,66 +206,66 @@ void drive(int fd)
 
 void forward(int fd, int distance)
 {
-	char buf[10];
+	char buf[5];
 
 	sprintf(buf, "%c%c%c%c%c",
 		DriveDirect,
 		(char)((speed_right>>8)&0xFF), (char)(speed_right&0xFF),
 		(char)((speed_left>>8)&0xFF), (char)(speed_left&0xFF));
 
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %s (Forward)\n", buf);
 	write(fd, buf, 5);
 }
 
 void reverse(int fd, int distance)
 {
-	char buf[10];
+	char buf[5];
 
 		sprintf(buf, "%c%c%c%c%c", 
 			DriveDirect,
 			(char)(((-speed_right)>>8)&0xFF), (char)((-speed_right)&0xFF), 
 			(char)(((-speed_left)>>8)&0xFF), (char)((-speed_left)&0xFF));
 
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %s (Backward)\n", buf);
 	write(fd, buf, 5);
 }
 
 void left(int fd)
 {
-	char buf[10];
+	char buf[5];
 
 		sprintf(buf, "%c%c%c%c%c", 
 			DriveDirect, 
 			(char)((speed_right>>8)&0xFF), (char)(speed_right&0xFF), 
 			(char)(((-speed_left)>>8)&0xFF), (char)((-speed_left)&0xFF));
 
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %s (Left)\n", buf);
 	write(fd, buf, 5);
 }
 
 void right(int fd)
 {
-	char buf[10];
+	char buf[5];
 
 		sprintf(buf, "%c%c%c%c%c", 
 			DriveDirect, 
 			(char)(((-speed_right)>>8)&0xFF), (char)((-speed_right)&0xFF), 
 			(char)((speed_left>>8)&0xFF), (char)(speed_left&0xFF));
 
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %s (Right)\n", buf);
 	write(fd, buf, 5);
 }
 
 void stop(int fd)
 {
-	char buf[10];
+	char buf[5];
 
 	sprintf(buf, "%c%c%c%c%c", 
 		DriveDirect, 
 		(char)(0),  (char)(0),  
 		(char)(0),  (char)(0));
 
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %s (Stop)\n", buf);
 
 	printf("[+] Stop Driving...\n");
 
