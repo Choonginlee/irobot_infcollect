@@ -363,7 +363,7 @@ void stop(int fd)
 
 void zigzag(int fd, int length, int width, int req_num_length)
 {
-	int num_length;
+	int num_length = 0;
 
 	if(req_num_length < 1)
 	{
