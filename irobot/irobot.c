@@ -13,6 +13,7 @@
  
 //                 Create Command              // Arguments
 const char         Start = 128;
+const char         Stop = 173;
 const char         SafeMode = 131;
 const char         FullMode = 132;
 const char         Clean = 135;
@@ -40,13 +41,14 @@ int rcv_command();
 char rcv_direction();
 
 void start(int fd);
+void exit(int fd);		// stop OI
 void clean(int fd);
 void drive(int fd);
 void forward(int fd, int distance);
 void reverse(int fd, int distance);
 void left(int fd);
 void right(int fd);
-void stop(int fd);
+void stop(int fd);		// stop driving
 void zigzag(int fd, int length, int width, int req_num_length);
 
 void main()
@@ -60,7 +62,6 @@ void main()
 		perror("/dev/ttyUSB0");
 		exit(-1);
 	}
-	
 
 	memset( &serialio, 0, sizeof(serialio) );
 	serialio.c_cflag = B115200;   // baud - 115200 
@@ -97,8 +98,9 @@ void main()
 				break;
 			case 4:
 				zigzag(fd, 1000, 500, 3);
+				break;
 			case 5:
-				return;
+				exit();
 				break;
 			default:
 				break;
@@ -149,6 +151,17 @@ void start(int fd)
 	write(fd, buf, 1);
 }
 
+void exit(int fd)
+{
+	char buf[10];
+
+	sprintf(buf, "%c", Stop);
+	printf("[+] Send msg : %s\n", buf);
+	write(fd, buf, 1);
+
+	printf("Goodbye..\n");
+}
+
 void clean(int fd)
 {
 	char buf[10];
@@ -177,11 +190,13 @@ void drive(int fd)
 	    switch(dir) { // the real value
 	        case 'A':
 	            // code for arrow up
-	        	forward(fd, 1000);
+	        	forward(fd, 400);
+	        	stop(fd)
 	            break;
 	        case 'B':
 	            // code for arrow down
-	        	reverse(fd, 1000);
+	        	reverse(fd, 400);
+	        	stop(fd)
 	            break;
 	        case 'C':
 	            // code for arrow right
@@ -204,9 +219,10 @@ void drive(int fd)
 	
 }
 
-void forward(int fd, int distance)
+void forward(int fd, int distance) // forward for distnace
 {
 	char buf[5];
+	int waittime = 0;
 
 	sprintf(buf, "%c%c%c%c%c",
 		DriveDirect,
@@ -215,9 +231,13 @@ void forward(int fd, int distance)
 
 	printf("[+] Send msg : %s (Forward)\n", buf);
 	write(fd, buf, 5);
+
+	// Time = Distance (mm) / Velocity (mm)
+	waittime = (int)(distance / speed_right)
+	sleep(waittime);
 }
 
-void reverse(int fd, int distance)
+void reverse(int fd, int distance) // backward for distance 
 {
 	char buf[5];
 
@@ -228,6 +248,10 @@ void reverse(int fd, int distance)
 
 	printf("[+] Send msg : %s (Backward)\n", buf);
 	write(fd, buf, 5);
+
+	// Time = Distance (mm) / Velocity (mm)
+	waittime = (int)(distance / speed_right)
+	sleep(waittime);
 }
 
 void left(int fd)
