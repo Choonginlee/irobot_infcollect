@@ -12,7 +12,7 @@ const int SAMPLES = 1000;
 //File descriptor for serial connection
 int fd;
 
-int ccr1050_getvalue();
+void ccr1050_getvalue();
 
 int main()
 {
