@@ -62,6 +62,7 @@ void GrabImages( fc2Context context, int numImagesToGrab )
     fc2Image rawImage;
     fc2Image convertedImage;
     fc2TimeStamp prevTimestamp = {0};
+    int imageCnt = 0;
     int i;
 
     error = fc2CreateImage( &rawImage );
@@ -84,6 +85,11 @@ void GrabImages( fc2Context context, int numImagesToGrab )
 
     for ( i=0; i < numImagesToGrab; i++ )
     {
+    	if(i%10 != 0) // 10 hz
+    	{
+    		continue;
+    	}
+
         // Retrieve the image
         error = fc2RetrieveBuffer( context, &rawImage );
         if ( error != FC2_ERROR_OK )
@@ -102,10 +108,12 @@ void GrabImages( fc2Context context, int numImagesToGrab )
 	            printf( "Error in fc2ConvertImageTo: %d\n", error );
 	        }
 
-	        // Store (print now) image data (convertedImage) with timestamp (ts)
-	        printf("[D] [%d.%d] %s\n", ts.cycleSeconds, ts.cycleCount, convertedImage);
+	        imageCnt++;
 
-	        /*
+	        // Store (print now) image data (convertedImage) with timestamp (ts)
+	        printf("[D] image #. %d [%d.%d] %s\n", imageCnt, ts.cycleSeconds, ts.cycleCount, convertedImage);
+
+	        
 	        // Save it to PNG
 	        printf("Saving the last image to fc2TestImage.png \n");
 			error = fc2SaveImage( &convertedImage, "fc2TestImage.png", FC2_PNG );
@@ -114,7 +122,7 @@ void GrabImages( fc2Context context, int numImagesToGrab )
 				printf( "Error in fc2SaveImage: %d\n", error );
 				printf( "Please check write permissions.\n");
 			}
-			*/
+			
 	    }
     }
 
@@ -139,7 +147,7 @@ int main()
     unsigned int numCameras = 0;
     int k_numImages = 100;    // number of images to be captured
 
-    printf("[Q] How many frames to capture? : ");
+    printf("[Q] How many frames to capture? \n");
     scanf("%d", &k_numImages);
 
     error = fc2CreateContext( &context );
@@ -189,7 +197,7 @@ int main()
         return 0;
     }
 
-    GrabImages( context, k_numImages );   
+    GrabImages( context, k_numImages*10 );   
 
     error = fc2StopCapture( context );
     if ( error != FC2_ERROR_OK )

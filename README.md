@@ -16,4 +16,13 @@
 - blabla
 
 
-!How to run
+!How to compile
+
+[1] irobot:
+- gcc irobot.c -o [Output File Name] -lncurses
+
+[2] pgr camera:
+- gcc pgr.c -o [Output File Name] -lflycapture-c
+
+[3] xg1010:
+- 
