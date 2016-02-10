@@ -53,14 +53,12 @@ void main()
 	int fd;		// Serial handler of irobot
 	struct termios serialio;
 	fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK);
-
-	/*
+	
 	if(fd < 0)
 	{
 		perror("/dev/ttyUSB0");
 		exit(-1);
 	}
-	*/
 
 	memset( &serialio, 0, sizeof(serialio) );
 	serialio.c_cflag = B115200;   // baud - 115200 
@@ -167,7 +165,6 @@ void drive(int fd)
 
 	while(1)
 	{
-		sleep(1);
 		dir = rcv_direction();
 
 		if(dir == 'f' | dir == 'F')
@@ -238,7 +235,6 @@ void left(int fd)
 
 	printf("[+] Send msg : %s\n", buf);
 	write(fd, buf, 5);
-	sleep(2);
 }
 
 void right(int fd)
@@ -252,7 +248,6 @@ void right(int fd)
 
 	printf("[+] Send msg : %s\n", buf);
 	write(fd, buf, 5);
-	sleep(2);
 }
 
 void stop(int fd)
@@ -268,7 +263,7 @@ void stop(int fd)
 
 	printf("[+] Stop Driving...\n");
 
-	write(fd, buf, 1);
+	write(fd, buf, 5);
 }
 
 void zigzag(int fd, int length, int width, int req_num_length)

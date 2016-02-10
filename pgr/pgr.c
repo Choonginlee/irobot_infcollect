@@ -90,38 +90,32 @@ void GrabImages( fc2Context context, int numImagesToGrab )
         {
             printf( "Error in retrieveBuffer: %d\n", error);
         }
-        else
-        {
-            // Get and print out the time stamp
-            fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage);
-            int diff = (ts.cycleSeconds - prevTimestamp.cycleSeconds) * 8000
-                        + (ts.cycleCount - prevTimestamp.cycleCount);
-            prevTimestamp = ts;
-            printf( 
-                "timestamp [%d %d] - %d\n", 
-                ts.cycleSeconds, 
-                ts.cycleCount, 
-                diff );
-        }       
-    }
+        else if ( error == FC2_ERROR_OK )
+    	{
+	        // Get the time stamp
+	        fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage);
 
-    if ( error == FC2_ERROR_OK )
-    {
-        // Convert the final image to RGB
-        error = fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, &rawImage, &convertedImage);
-        if ( error != FC2_ERROR_OK )
-        {
-            printf( "Error in fc2ConvertImageTo: %d\n", error );
-        }
+	        // Convert the final image to RGB
+	        error = fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, &rawImage, &convertedImage);
+	        if ( error != FC2_ERROR_OK )
+	        {
+	            printf( "Error in fc2ConvertImageTo: %d\n", error );
+	        }
 
-        // Save it to PNG
-        printf("Saving the last image to fc2TestImage.png \n");
-		error = fc2SaveImage( &convertedImage, "fc2TestImage.png", FC2_PNG );
-		if ( error != FC2_ERROR_OK )
-		{
-			printf( "Error in fc2SaveImage: %d\n", error );
-			printf( "Please check write permissions.\n");
-		}
+	        // Store (print now) image data (convertedImage) with timestamp (ts)
+	        printf("[D] [%d.%d] %s\n", ts.cycleSeconds, ts.cycleCount, convertedImage);
+
+	        /*
+	        // Save it to PNG
+	        printf("Saving the last image to fc2TestImage.png \n");
+			error = fc2SaveImage( &convertedImage, "fc2TestImage.png", FC2_PNG );
+			if ( error != FC2_ERROR_OK )
+			{
+				printf( "Error in fc2SaveImage: %d\n", error );
+				printf( "Please check write permissions.\n");
+			}
+			*/
+	    }
     }
 
     error = fc2DestroyImage( &rawImage );
@@ -143,7 +137,10 @@ int main()
     fc2Context context;
     fc2PGRGuid guid;
     unsigned int numCameras = 0;
-    const int k_numImages = 100;    // number of images to be captured
+    int k_numImages = 100;    // number of images to be captured
+
+    printf("[Q] How many frames to capture? : ");
+    scanf("%d", &k_numImages);
 
     error = fc2CreateContext( &context );
     if ( error != FC2_ERROR_OK )
@@ -182,5 +179,32 @@ int main()
     }
 
 	PrintCameraInfo( context );
+
+	SetTimeStamping( context, TRUE );
+
+    error = fc2StartCapture( context );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "Error in fc2StartCapture: %d\n", error );
+        return 0;
+    }
+
+    GrabImages( context, k_numImages );   
+
+    error = fc2StopCapture( context );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "Error in fc2StopCapture: %d\n", error );
+        return 0;
+    }
+
+    error = fc2DestroyContext( context );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "Error in fc2DestroyContext: %d\n", error );
+        return 0;
+    }
+
+    printf( "Done! Press Enter to exit...\n" );
 	return 0;
 }
