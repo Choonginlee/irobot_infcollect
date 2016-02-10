@@ -7,6 +7,8 @@
 - sudo modprobe usbserial vendor=[vendor ID] product=[product ID]
 - dmesg | grep tty to check ttyUSB port
 
+- install ncurses library (libncurses5-dev libncursesw5-dev)
+
 [2] pgr camera: 
 - install flycapture https://www.ptgrey.com/support/downloads
 
