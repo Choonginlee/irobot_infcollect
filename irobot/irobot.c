@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <termios.h>
 #include <fcntl.h>
+#include <pthread.h>
 //#include <time.h>
 
 // Definitions of iRobot Create OpenInterface Command Numbers
@@ -19,19 +20,22 @@ const char         FullMode = 132;
 const char         Clean = 135;
 const char         Drive = 137;                // 4:   [Vel. Hi] [Vel Low] [Rad. Hi] [Rad. Low]
 const char         DriveDirect = 145;          // 4:   [Right Hi] [Right Low] [Left Hi] [Left Low]
-const char         Demo = 136;                 // 2:    Run Demo x
+//const char         Demo = 136;                 // 2:    Run Demo x
 const char         Sensors = 142;              // 1:    Sensor Packet ID
-const char         CoverandDock = 143;         // 1:    Return to Charger
+//const char         CoverandDock = 143;         // 1:    Return to Charger
 const char         SensorStream = 148;         // x+1: [# of packets requested] IDs of requested packets to stream
 const char         QueryList = 149;            // x+1: [# of packets requested] IDs of requested packets to stream
 const char         StreamPause = 150;          // 1:    0 = stop stream, 1 = start stream
-const char         PlaySong = 141;
-const char         Song = 140;
+//const char         PlaySong = 141;
+//const char         Song = 140;
 
-                /* iRobot Create Sensor IDs */
-const char         BumpsandDrops = 7;
-const char         Distance = 19;
-const char         Angle = 20;
+                /* iRobot Create Sensor Packet IDs */
+const char         LeftEncoderCounts = 43;
+const char         RightEncoderCounts = 44;
+//const char         Distance = 19;
+//const char         Angle = 20;
+
+const int          C_PACKET_SIZE = 80;			// Censor packet size
  
 int speed_left =  200;
 int speed_right = 200;
@@ -54,6 +58,8 @@ void right(int fd);
 void right_a(int fd, int angle);
 void stop(int fd);		// stop driving
 void zigzag(int fd, int length, int width, int req_num_length);
+
+void *receive_censor(void *fd);
 
 void main()
 {
@@ -143,9 +149,14 @@ char rcv_direction()
 }
 
 // Start  - send irobot start and safe mode
+// It tries to listen left / right encoder
 void start(int fd)
 {
 	char buf[10];
+
+	pthread_t p_thread[1];
+	int thr_id;
+	int status;
 
 	sprintf(buf, "%c", Start);
 	printf("[+] Send msg : %s\n", buf);
@@ -154,6 +165,16 @@ void start(int fd)
 	sprintf(buf, "%c", SafeMode);
 	printf("[+] Send msg : %s\n", buf);
 	write(fd, buf, 1);
+
+	// Listen to encoders by creating a thread
+	thr_id = pthread_create(&p_thread[0], NULL, receive_censor, (void *)&fd);
+	if(thr_id < 0)
+	{
+		perror("Thread create error : ");
+		exit(0);
+	}
+
+	//pthread_join(p_thread[0], (void **)&status);
 }
 
 void quit(int fd)
@@ -173,6 +194,7 @@ void clean(int fd)
 
 	sprintf(buf, "%c", Clean);
 	printf("[+] Send msg : %s\n", buf);
+	printf("[+] If you want to pause cleaning, Request Clean again.\n");
 	write(fd, buf, 1);
 }
 
@@ -398,4 +420,33 @@ void zigzag(int fd, int length, int width, int req_num_length)
 			right_a(fd, 90);
 		}
 	}
+}
+
+// Interrupt Routine to read in serial sensor data packets - Encoder sensor only
+void *receive_censor(void *v_fd)
+{
+	int fd = *(int *)v_fd;
+	char buf[5];
+	char start_character;
+	unsigned char data_packet[C_PACKET_SIZE];
+
+	while(1)
+	{
+		// request censor left and right
+		sprintf(buf, "%c%c", Sensors, LeftEncoderCounts);
+		write(fd, buf, 2);
+
+		sprintf(buf, "%c%c", Sensors, RightEncoderCounts);
+		write(fd, buf, 2);
+
+		if(C_PACKET_SIZE != read(fd, data_packet, C_PACKET_SIZE))
+		{
+			//printf("Not Valid Packet size\n");
+			printf("%s\n", data_packet);
+			continue;
+		}
+
+		printf("Received!\n");
+	}
+
 }

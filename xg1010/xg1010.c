@@ -41,11 +41,12 @@ int main()
 	tcsetattr(fd, TCSANOW, &serialio_xg );   // port attr setting
 
 	// Get, parse and display data
-	for(i=0; i<SAMPLES ;i++)
+	while(1)
+	{
 		ccr1050_getvalue();
+	}
 
 	close(fd);
-
 }
 
 // Get a data packet and parse it
