@@ -388,6 +388,7 @@ void zigzag(int fd, int length, int width, int req_num_length)
 			left_a(fd, 90);
 			forward_d(fd, width);
 			left_a(fd, 90);
+			num_length++;
 		}
 		// if num_length is even, turn right -> go 'width' -> turn right
 		else
@@ -395,6 +396,7 @@ void zigzag(int fd, int length, int width, int req_num_length)
 			right_a(fd, 90);
 			forward_d(fd, width);
 			right_a(fd, 90);
+			num_length++;
 		}
 	}
 }
