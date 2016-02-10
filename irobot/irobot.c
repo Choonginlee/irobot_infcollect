@@ -41,7 +41,7 @@ int rcv_command();
 char rcv_direction();
 
 void start(int fd);
-void exit(int fd);		// stop OI
+void quit(int fd);		// stop OI
 void clean(int fd);
 void drive(int fd);
 void forward(int fd, int distance);
@@ -100,7 +100,7 @@ void main()
 				zigzag(fd, 1000, 500, 3);
 				break;
 			case 5:
-				exit();
+				quit(fd);
 				break;
 			default:
 				break;
@@ -117,7 +117,7 @@ void showInstruction()
 	printf("2. To clean, Type 2\n");
 	printf("3. To move around, Type 3\n");
 	printf("4. To zigzag, Type 4\n");
-	printf("5. To exit, Type 5\n");
+	printf("5. To quit, Type 5\n");
 	printf("===============================\n");
 }
 
@@ -151,7 +151,7 @@ void start(int fd)
 	write(fd, buf, 1);
 }
 
-void exit(int fd)
+void quit(int fd)
 {
 	char buf[10];
 
@@ -191,12 +191,12 @@ void drive(int fd)
 	        case 'A':
 	            // code for arrow up
 	        	forward(fd, 400);
-	        	stop(fd)
+	        	stop(fd);
 	            break;
 	        case 'B':
 	            // code for arrow down
 	        	reverse(fd, 400);
-	        	stop(fd)
+	        	stop(fd);
 	            break;
 	        case 'C':
 	            // code for arrow right
@@ -233,13 +233,15 @@ void forward(int fd, int distance) // forward for distnace
 	write(fd, buf, 5);
 
 	// Time = Distance (mm) / Velocity (mm)
-	waittime = (int)(distance / speed_right)
+	waittime = (int)(distance / speed_right);
 	sleep(waittime);
 }
 
 void reverse(int fd, int distance) // backward for distance 
 {
 	char buf[5];
+	
+	int waittime = 0;
 
 		sprintf(buf, "%c%c%c%c%c", 
 			DriveDirect,
@@ -250,7 +252,7 @@ void reverse(int fd, int distance) // backward for distance
 	write(fd, buf, 5);
 
 	// Time = Distance (mm) / Velocity (mm)
-	waittime = (int)(distance / speed_right)
+	waittime = (int)(distance / speed_right);
 	sleep(waittime);
 }
 
