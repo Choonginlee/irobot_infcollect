@@ -35,7 +35,7 @@ const char         RightEncoderCounts = 44;
 //const char         Distance = 19;
 //const char         Angle = 20;
 
-const int          C_PACKET_SIZE = 80;			// Censor packet size
+const int          C_PACKET_SIZE = 2;			// Censor packet size
  
 int speed_left =  200;
 int speed_right = 200;
@@ -446,11 +446,11 @@ void *receive_censor(void *v_fd)
 		if(C_PACKET_SIZE != read(fd, data_packet, C_PACKET_SIZE))
 		{
 			//printf("Not Valid Packet size\n");
-			//printf("%s\n", data_packet);
+			printf("%s\n", data_packet);
 			continue;
 		}
 
-		printf("Received!\n");
+		printf("Received! %c%c\n", data_packet[0], data_packet[1]);
 	}
 
 }
