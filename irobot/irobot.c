@@ -446,7 +446,7 @@ void *receive_censor(void *v_fd)
 		if(C_PACKET_SIZE != read(fd, data_packet, C_PACKET_SIZE))
 		{
 			//printf("Not Valid Packet size\n");
-			printf("%s\n", data_packet);
+			//printf("%s\n", data_packet);
 			continue;
 		}
 
