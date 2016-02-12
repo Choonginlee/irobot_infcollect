@@ -292,6 +292,8 @@ void start(fc2Context context, int fdXG, int fdIrobot)
 		exit(0);
 	}
 
+	requestCensorEnc(fd);
+
 	// Listen to encoders by creating a thread
 	thr_id[2] = pthread_create(&p_thread[2], NULL, receiveCensorEnc, (void *)&fdIrobot);
 	if(thr_id[2] < 0)
@@ -707,7 +709,7 @@ void *receiveCensorXG(void *v_fd)
 		}
 
 		xgElapsedTime = (clock()-startTime)/10000.0;
-	 	xgAngleData = angle_int*10.0;
+	 	xgAngleData = angle_int;
 
 		usleep( 15 * 1000 );
 	}
@@ -731,8 +733,6 @@ void *receiveCensorEnc(void *v_fd)
 	unsigned short righten;
 	unsigned char data_packet[C_PACKET_SIZE];
 	float elapsedTime;
-
-	requestCensorEnc(fd);
 
 	while(1)
 	{
