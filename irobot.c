@@ -341,7 +341,7 @@ void drive(int fd)
 	//keypad(stdscr, TRUE);
 
 	printf("-- Moving Instruction --\n");
-	printf("[Up]-Forward [Down]-Backward [Right]-Right [Left]-Left [s]-Stop\n");
+	printf("[Up]-Forward [Down]-Backward [Right]-Right [Left]-Left [Space]-Pause [Enter]-exit\n");
 
 	while(1)
 	{
