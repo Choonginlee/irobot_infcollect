@@ -563,6 +563,7 @@ void GrabImages(fc2Context context)
     fc2Error error;
     fc2Image rawImage;
     fc2Image convertedImage;
+    char fileName[10];
     float elapsedTime;
     int imageCnt = 0;
 
@@ -611,14 +612,15 @@ void GrabImages(fc2Context context)
 	        printf("[+] [%f] Saving the last image to %d.png \n", elapsedTime, imageCnt);
 
 	        // file name change!
-			error = fc2SaveImage( &convertedImage, "fc2TestImage.png", FC2_PNG );
+
+	        sprintf(fileName, "%d.png", imageCnt);
+			error = fc2SaveImage( &convertedImage, fileName, FC2_PNG );
 			if ( error != FC2_ERROR_OK )
 			{
 				printf( "[-] Error in saving image %d.png: %d\n", imageCnt, error );
 				printf( "[-] Please check write permissions.\n");
 				exit(-1);
-			}
-			
+			}			
 	    }
     }
 
@@ -680,6 +682,7 @@ void *receiveCensorXG(void *v_fd)
 	 	angle_float = angle_int/100.0;
 		
 		printf("angle_float : %f [deg]\n", angle_float);
+		usleep( 15 * 1000 );
 	}
 }
 
@@ -691,8 +694,6 @@ void requestCensorEnc(int fd)
 	// request censor stream for two bytes (LeftCnt / RightCnt)
 	sprintf(buf, "%c%c%c%c", SensorStream, 2, LeftEncoderCounts, RightEncoderCounts);
 	write(fd, buf, 4);
-
-	usleep( 15 * 1000 );
 }
 
 // Thread for receiving left right censor data
@@ -731,7 +732,8 @@ void *receiveCensorEnc(void *v_fd)
 			elapsedTime = (clock()-startTime)/100000.0;
 			// save the left encoder data
 			printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
-			usleep(500);
 		}
+
+		usleep( 15 * 1000 );
 	}
 }
