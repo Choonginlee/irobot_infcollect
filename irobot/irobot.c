@@ -449,10 +449,12 @@ void request_censor(int fd)
 void *receive_censor(void *v_fd)
 {
 	int fd = *(int *)v_fd;
-	unsigned char leftHi; // left encoder 
+	unsigned char leftHi;
 	unsigned char leftLo;
 	unsigned char rightHi;
 	unsigned char rightLo;
+	unsigned short leften;
+	unsigned short righten;
 	unsigned char data_packet[C_PACKET_SIZE];
 	float elapsedTime;
 
@@ -479,10 +481,12 @@ void *receive_censor(void *v_fd)
 			leftLo = data_packet[4];
 			rightHi = data_packet[6];
 			rightLo = data_packet[7];
+			leften = *(short *)&data_packet[3];
+			righten = *(short *)&data_packet[6];
 
-			elapsedTime = (startTime - clock())/CLOCKS_PER_SEC;
+			elapsedTime = clock() - startTime;
 			// save the left encoder data
-			printf("[%f] Left/Right : [%u %u]\t[%u %u]\n", elapsedTime, leftHi, leftLo, rightHi, rightLo);
+			printf("[%f] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
 			usleep(500);
 		}
 	}
