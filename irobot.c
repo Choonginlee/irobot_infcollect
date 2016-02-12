@@ -311,14 +311,14 @@ void quit(int fd)
 	stop(fd); // stop driving
 
 	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
-	printf("[+] Send msg : %d%d (Pause Stream)", buf[0], buf[1]);
+	printf("[+] Send msg : %d%d (Pause Stream)\n", buf[0], buf[1]);
 	write(fd, buf, 2);
 
 	sprintf(buf, "%c", Stop); // stop OI
 	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
 	write(fd, buf, 1);
 
-	printf("[+] Goodbye..If you want to start again, press 1\n");
+	printf("\n[+] Goodbye..If you want to start again, press 1\n");
 }
 
 void clean(int fd)
@@ -341,7 +341,7 @@ void drive(int fd)
 	//keypad(stdscr, TRUE);
 
 	printf("-- Moving Instruction --\n");
-	printf("[Up]-Forward\t[Down]-Backward\t[Right]-Right\t[Left]-Left\t[s] - Stop\n");
+	printf("[Up]-Forward [Down]-Backward [Right]-Right [Left]-Left [s]-Stop\n");
 
 	while(1)
 	{
@@ -371,7 +371,7 @@ void drive(int fd)
 	        	break;
 	        case 0xA: // enter key
 	        	endwin();
-	        	break;
+	        	return;
 	        default:
 	        	//printf("%c %d\n", dir, dir);
 	        	//printf("[-] Input code : %c\n", dir);
