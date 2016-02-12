@@ -373,6 +373,7 @@ void drive(int fd)
 	        	endwin();
 	        	break;
 	        default:
+	        	printf("%c %d\n", dir, dir);
 	        	//printf("[-] Input code : %c\n", dir);
 				//printf("[-] Invlid input. See the instruction below\n");
 				//printf("[Up]-Forward\t[Down]-Backward\t[Right]-Right\t[Left]-Left\t[s] - Stop\n");
