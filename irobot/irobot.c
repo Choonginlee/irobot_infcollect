@@ -166,7 +166,7 @@ void start(int fd)
 	printf("[+] Send msg : %s\n", buf);
 	write(fd, buf, 1);
 
-	char buf[5];
+	//char buf[5];
 
 		sprintf(buf, "%c%c%c%c%c", 
 			DriveDirect, 
