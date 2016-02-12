@@ -175,7 +175,7 @@ int setXG()
 
 	if(fd < 0)
 	{
-		printf("[-] Check the connection of XG camera.\n");
+		printf("[-] Check the connection of XG consor.\n");
 		perror("/dev/ttyUSB0");
 		exit(-1);
 	}
@@ -654,7 +654,7 @@ void *receiveCensorXG(void *v_fd)
 		if(PACKET_SIZE != read(fd, data_packet, PACKET_SIZE))
 		{
 			//printf("Not Valid Packet size\n");
-			return;
+			continue;
 		}
 
 		// Verify data packet header 
