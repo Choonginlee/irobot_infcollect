@@ -572,7 +572,7 @@ void GrabImages(fc2Context context)
     int imageCnt = 0;
     int fdTxt; // file descriptor for writing file
 
-    fdTxt = open("./result/pgr.txt", O_WRONLY | O_CREAT);
+    fdTxt = open("./result/pgr.txt", O_WRONLY | O_CREAT, 0644);
 	if(fdTxt < 0)
 	{
 		perror("./result/pgr.txt");
