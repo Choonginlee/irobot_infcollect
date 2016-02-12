@@ -451,6 +451,7 @@ void *receive_censor(void *v_fd)
 		}
 
 		printf("2 bytes Received! %d %d\n", data_packet[0], data_packet[1]);
+		sleep(1);
 	}
 
 }
