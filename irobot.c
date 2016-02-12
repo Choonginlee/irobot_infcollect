@@ -369,7 +369,7 @@ void drive(int fd)
 	        	// code for spacebar
 	        	stop(fd);
 	        	break;
-	        case 0x10: // enter key
+	        case 0xA: // enter key
 	        	endwin();
 	        	break;
 	        default:
