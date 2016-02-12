@@ -369,6 +369,9 @@ void drive(int fd)
 	        	// code for spacebar
 	        	stop(fd);
 	        	break;
+	        case 0x157: // enter key
+	        	endwin();
+	        	break;
 	        default:
 	        	//printf("[-] Input code : %c\n", dir);
 				//printf("[-] Invlid input. See the instruction below\n");
