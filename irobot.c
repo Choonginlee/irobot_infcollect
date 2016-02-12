@@ -48,6 +48,12 @@ clock_t startTime;
 int SPEED_LEFT =  200;
 int SPEED_RIGHT = 200;
 
+float xgElapsedTime;
+float xgAngleData;
+float encElapsedTime;
+unsigned short encLeftCnt;
+unsigned short encRightCnt;
+
 fc2Context setPGR();
 int setXG();
 int setIRobot();
@@ -572,12 +578,15 @@ void GrabImages(fc2Context context)
     int imageCnt = 0;
     int fdTxt; // file descriptor for writing file
 
-    fdTxt = open("./result/pgr.txt", O_WRONLY | O_CREAT, 0644);
+    fdTxt = open("./result/result.txt", O_WRONLY | O_CREAT, 0644);
 	if(fdTxt < 0)
 	{
 		perror("./result/pgr.txt");
 		exit(-1);
 	}
+
+    sprintf(writeLine, "TimeImg\tImage #\tTimeGyro\tdegree\tTimeEnc\tleftEnc\trightEnc\n");
+    write(fdTxt, writeLine, strlen(writeLine));
 
     error = fc2CreateImage( &rawImage );
     if ( error != FC2_ERROR_OK )
@@ -592,6 +601,8 @@ void GrabImages(fc2Context context)
         printf( "[-] Error in fc2CreateImage: %d\n", error );
         exit(-1);
     }
+
+	printf("[+] Start Recording.. \n");
 
     // If externally allocated memory is to be used for the converted image,
     // simply assigning the pData member of the fc2Image structure is
@@ -619,10 +630,13 @@ void GrabImages(fc2Context context)
 	        }
 
 	        imageCnt++;
-			elapsedTime = (clock()-startTime)/100000.0;
+			elapsedTime = (clock()-startTime)/10000.0;
 
 			// Record saved image info
-	        sprintf(writeLine, "%f, %d\n", elapsedTime, imageCnt);
+	        sprintf(writeLine, "%.4f,\t%d,\t%.4f,\t%d,\t%.4f,\t%u,\t%u\n", 
+	        	elapsedTime, imageCnt,
+	        	xgElapsedTime, (int)xgAngleData,
+	        	encElapsedTime, encLeftCnt, encRightCnt);
 	        write(fdTxt, writeLine, strlen(writeLine));
 
 	        // Save it to PNG
@@ -658,7 +672,6 @@ void GrabImages(fc2Context context)
 void *receiveCensorXG(void *v_fd)
 {
 	int fd = *(int *)v_fd;
-	float elapsedTime;
 	short header;
 	short rate_int;
 	short angle_int;
@@ -693,11 +706,9 @@ void *receiveCensorXG(void *v_fd)
 			continue;
 		}
 
-		// Apply scale factors
-		rate_float = rate_int/100.0;
-	 	angle_float = angle_int/100.0;
-		
-		printf("[+] angle_float : %f [deg]\n", angle_float);
+		xgElapsedTime = (clock()-startTime)/10000.0;
+	 	xgAngleData = angle_int*10.0;
+
 		usleep( 15 * 1000 );
 	}
 }
@@ -745,9 +756,10 @@ void *receiveCensorEnc(void *v_fd)
 			leften = *(short *)&data_packet[3];
 			righten = *(short *)&data_packet[6];
 
-			elapsedTime = (clock()-startTime)/100000.0;
-			// save the left encoder data
-			printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
+			encElapsedTime = (clock()-startTime)/10000.0;
+			encLeftCnt = leften;
+			encRightCnt = righten;
+			//printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
 		}
 
 		usleep( 15 * 1000 );

@@ -6,7 +6,7 @@
 - lsusb to check ID
 - sudo modprobe usbserial vendor=[vendor ID] product=[product ID]
 - dmesg | grep tty to check ttyUSB port
-- Set ttyUSB0
+- Set ttyUSB1
 
 - install ncurses library (libncurses5-dev libncursesw5-dev)
 
@@ -19,11 +19,10 @@
 
 !How to compile
 
-[1] irobot:
-- gcc irobot.c -o [Output File Name] -lncurses -lpthread
+Just type command below:
+sudo sh ./go
 
-[2] pgr camera:
-- gcc pgr.c -o [Output File Name] -lflycapture-c
+!How to run
 
-[3] xg1010:
-- gcc xg1010.c -o [Output File Name]
+mkdir result
+sudo ./irobot
