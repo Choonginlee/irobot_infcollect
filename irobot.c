@@ -118,7 +118,7 @@ void main()
 				break;
 			case 5:
 				quit(fdIrobot);
-				break;
+				return;
 			default:
 				break;
 		}
@@ -318,7 +318,7 @@ void quit(int fd)
 	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
 	write(fd, buf, 1);
 
-	printf("\n[+] Goodbye..If you want to start again, press 1\n");
+	printf("\n[+] Goodbye..\n");
 }
 
 void clean(int fd)
