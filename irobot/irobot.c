@@ -166,15 +166,7 @@ void start(int fd)
 	printf("[+] Send msg : %s\n", buf);
 	write(fd, buf, 1);
 
-	//char buf[5];
-
-		sprintf(buf, "%c%c%c%c%c", 
-			DriveDirect, 
-			(char)((speed_right>>8)&0xFF), (char)(speed_right&0xFF), 
-			(char)(((-speed_left)>>8)&0xFF), (char)((-speed_left)&0xFF));
-
-	//printf("[+] Send msg : %s (Left)\n", buf);
-	write(fd, buf, 5);
+	right(fd);
 
 	// Listen to encoders by creating a thread
 	thr_id = pthread_create(&p_thread[0], NULL, receive_censor, (void *)&fd);
@@ -183,6 +175,9 @@ void start(int fd)
 		perror("Thread create error : ");
 		exit(0);
 	}
+
+	sleep(10);
+	stop(fd);
 
 	//pthread_join(p_thread[0], (void **)&status);
 }
