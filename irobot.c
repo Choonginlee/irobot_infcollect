@@ -336,7 +336,8 @@ void drive(int fd)
 	char dir;
 
 	initscr();
-	cbreak();
+	raw();
+	noecho();
 	//keypad(stdscr, TRUE);
 
 	printf("-- Moving Instruction --\n");
@@ -367,6 +368,7 @@ void drive(int fd)
 	        case ' ':
 	        	// code for spacebar
 	        	stop(fd);
+	        	break;
 	        default:
 	        	//printf("[-] Input code : %c\n", dir);
 				//printf("[-] Invlid input. See the instruction below\n");
