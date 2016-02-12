@@ -484,9 +484,9 @@ void *receive_censor(void *v_fd)
 			leften = *(short *)&data_packet[3];
 			righten = *(short *)&data_packet[6];
 
-			elapsedTime = clock() - startTime;
+			elapsedTime = clock() - startTime / 100000;
 			// save the left encoder data
-			printf("[%f] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
+			printf("[%f sec] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
 			usleep(500);
 		}
 	}
