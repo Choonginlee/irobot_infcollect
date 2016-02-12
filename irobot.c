@@ -633,7 +633,7 @@ void GrabImages(fc2Context context)
 			elapsedTime = (clock()-startTime)/10000.0;
 
 			// Record saved image info
-	        sprintf(writeLine, "%.4f,\t%d,\t%.4f,\t%d,\t%.4f,\t%u,\t%u\n", 
+	        sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
 	        	elapsedTime, imageCnt,
 	        	xgElapsedTime, (int)xgAngleData,
 	        	encElapsedTime, encLeftCnt, encRightCnt);
