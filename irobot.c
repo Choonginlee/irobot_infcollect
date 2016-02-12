@@ -292,7 +292,7 @@ void start(fc2Context context, int fdXG, int fdIrobot)
 		exit(0);
 	}
 
-	requestCensorEnc(fd);
+	requestCensorEnc(fdIrobot);
 
 	// Listen to encoders by creating a thread
 	thr_id[2] = pthread_create(&p_thread[2], NULL, receiveCensorEnc, (void *)&fdIrobot);
