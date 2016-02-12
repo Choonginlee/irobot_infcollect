@@ -166,6 +166,16 @@ void start(int fd)
 	printf("[+] Send msg : %s\n", buf);
 	write(fd, buf, 1);
 
+	char buf[5];
+
+		sprintf(buf, "%c%c%c%c%c", 
+			DriveDirect, 
+			(char)((speed_right>>8)&0xFF), (char)(speed_right&0xFF), 
+			(char)(((-speed_left)>>8)&0xFF), (char)((-speed_left)&0xFF));
+
+	//printf("[+] Send msg : %s (Left)\n", buf);
+	write(fd, buf, 5);
+
 	// Listen to encoders by creating a thread
 	thr_id = pthread_create(&p_thread[0], NULL, receive_censor, (void *)&fd);
 	if(thr_id < 0)
@@ -451,7 +461,7 @@ void *receive_censor(void *v_fd)
 		}
 
 		printf("2 bytes Received! %d %d\n", data_packet[0], data_packet[1]);
-		sleep(1);
+		usleep(10000);
 	}
 
 }
