@@ -253,7 +253,6 @@ int rcvCommand()
 // [Thread 1] PGR camera capture
 // [Thread 2] XG1010 angle listening
 // [Thread 3] Encoder counter listening
-// It tries to listen left / right encoder
 void start(fc2Context context, int fdXG, int fdIrobot)
 {
 	char buf[1];
@@ -271,7 +270,7 @@ void start(fc2Context context, int fdXG, int fdIrobot)
 
 	startTime = clock();
 
-	// camera captures by creating a thread
+	// camera captures by creating a thread & record all the info in 3 threads
 	thr_id[0] = pthread_create(&p_thread[0], NULL, receivePGRCapture, (void *)&context);
 	if(thr_id[0] < 0)
 	{
@@ -301,13 +300,17 @@ void quit(int fd)
 {
 	char buf[10];
 
-	stop(fd);
+	stop(fd); // stop driving
 
-	sprintf(buf, "%c", Stop);
-	printf("[+] Send msg : %s\n", buf);
+	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
+	printf("[+] Send msg : %d%d (Pause Stream)", buf[0], buf[1]);
+	write(fd, buf, 2);
+
+	sprintf(buf, "%c", Stop); // stop OI
+	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
 	write(fd, buf, 1);
 
-	printf("Goodbye..\n");
+	printf("[+] Goodbye..If you want to start again, press 1\n");
 }
 
 void clean(int fd)
@@ -315,7 +318,7 @@ void clean(int fd)
 	char buf[10];
 
 	sprintf(buf, "%c", Clean);
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %d (Clean)\n", buf[0]);
 	printf("[+] If you want to pause cleaning, Request Clean again.\n");
 	write(fd, buf, 1);
 }
@@ -375,7 +378,7 @@ void forward(int fd) // forward straight
 		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF),
 		(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
 
-	printf("[+] Send msg : %s (Forward straight)\n", buf);
+	printf("[+] Send msg : (Forward straight)\n");
 	write(fd, buf, 5);
 }
 
@@ -389,7 +392,7 @@ void forwardDistance(int fd, int distance) // forward for distnace
 		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF),
 		(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
 
-	printf("[+] Send msg : %s (Forward for %d mm)\n", buf, distance);
+	printf("[+] Send msg : (Forward for %d mm)\n", distance);
 	write(fd, buf, 5);
 
 	// Time = Distance (mm) / Velocity (mm)
@@ -406,7 +409,7 @@ void reverse(int fd) // backward straight
 			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
 			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
 
-	printf("[+] Send msg : %s (Backward straight)\n", buf);
+	printf("[+] Send msg : (Backward straight)\n");
 	write(fd, buf, 5);
 }
 
@@ -420,7 +423,7 @@ void reverseDistance(int fd, int distance) // backward for distance
 			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
 			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
 
-	printf("[+] Send msg : %s (Backward for %d mm)\n", buf, distance);
+	printf("[+] Send msg : (Backward for %d mm)\n", distance);
 	write(fd, buf, 5);
 
 	// Time = Distance (mm) / Velocity (mm)
@@ -437,7 +440,7 @@ void left(int fd)
 			(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
 			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
 
-	printf("[+] Send msg : %s (Left)\n", buf);
+	printf("[+] Send msg : (Left)\n");
 	write(fd, buf, 5);
 }
 
@@ -451,7 +454,7 @@ void leftAngle(int fd, int angle)
 			(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
 			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
 
-	printf("[+] Send msg : %s (Left for %d degree)\n", buf, angle);
+	printf("[+] Send msg : (Left for %d degree)\n", angle);
 	write(fd, buf, 5);
 
 	// 200mm velocity : 90 degrees per sec
@@ -468,7 +471,7 @@ void right(int fd)
 			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
 			(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
 
-	printf("[+] Send msg : %s (Right)\n", buf);
+	printf("[+] Send msg : (Right)\n");
 	write(fd, buf, 5);
 }
 
@@ -482,7 +485,7 @@ void rightAngle(int fd, int angle)
 			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
 			(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
 
-	printf("[+] Send msg : %s (Right)\n", buf);
+	printf("[+] Send msg :(Right)\n");
 	write(fd, buf, 5);
 
 	// 200mm velocity : 90 degrees per sec
@@ -499,7 +502,7 @@ void stop(int fd)
 		(char)(0),  (char)(0),  
 		(char)(0),  (char)(0));
 
-	printf("[+] Send msg : %s (Stop)\n", buf);
+	printf("[+] Send msg : %d%d%d%d%d (Stop Driving)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 
 	write(fd, buf, 5);
 }
@@ -563,9 +566,18 @@ void GrabImages(fc2Context context)
     fc2Error error;
     fc2Image rawImage;
     fc2Image convertedImage;
-    char fileName[10];
+    char filePath[10];
+    char writeLine[10];
     float elapsedTime;
     int imageCnt = 0;
+    int fdTxt; // file descriptor for writing file
+
+    fdTxt = open("./result/pgr.txt", O_WRONLY);
+	if(fdTxt < 0)
+	{
+		perror("./result/pgr.txt");
+		exit(-1);
+	}
 
     error = fc2CreateImage( &rawImage );
     if ( error != FC2_ERROR_OK )
@@ -608,19 +620,23 @@ void GrabImages(fc2Context context)
 
 	        imageCnt++;
 			elapsedTime = (clock()-startTime)/100000.0;
+
+			// Record saved image info
+	        sprintf(writeLine, "%f, %d\n", elapsedTime, imageCnt);
+	        write(fdTxt, writeLine, strlen(writeLine));
+
 	        // Save it to PNG
-	        printf("[+] [%f] Saving the last image to %d.png \n", elapsedTime, imageCnt);
-
-	        // file name change!
-
-	        sprintf(fileName, "%d.png", imageCnt);
-			error = fc2SaveImage( &convertedImage, fileName, FC2_PNG );
+	        sprintf(filePath, "./result/%d.png", imageCnt);
+			error = fc2SaveImage( &convertedImage, filePath, FC2_PNG );
 			if ( error != FC2_ERROR_OK )
 			{
 				printf( "[-] Error in saving image %d.png: %d\n", imageCnt, error );
 				printf( "[-] Please check write permissions.\n");
 				exit(-1);
-			}			
+			}
+	        
+	        //printf("[+] [%f] Saving the last image to %d.png \n", elapsedTime, imageCnt);
+
 	    }
     }
 
@@ -681,7 +697,7 @@ void *receiveCensorXG(void *v_fd)
 		rate_float = rate_int/100.0;
 	 	angle_float = angle_int/100.0;
 		
-		printf("angle_float : %f [deg]\n", angle_float);
+		printf("[+] angle_float : %f [deg]\n", angle_float);
 		usleep( 15 * 1000 );
 	}
 }
