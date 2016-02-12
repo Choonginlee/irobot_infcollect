@@ -7,7 +7,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <pthread.h>
-//#include <time.h>
+#include <time.h>
 
 // Definitions of iRobot Create OpenInterface Command Numbers
 // See the Create OpenInterface manual for a complete list
@@ -35,8 +35,10 @@ const char         RightEncoderCounts = 44;
 //const char         Distance = 19;
 //const char         Angle = 20;
 
-const int          C_PACKET_SIZE = 2;			// Censor packet size
+const int          C_PACKET_SIZE = 9;			// Censor packet size
  
+clock_t startTime;
+
 int speed_left =  200;
 int speed_right = 200;
 
@@ -59,6 +61,7 @@ void right_a(int fd, int angle);
 void stop(int fd);		// stop driving
 void zigzag(int fd, int length, int width, int req_num_length);
 
+void request_censor(int fd);
 void *receive_censor(void *fd);
 
 void main()
@@ -152,21 +155,24 @@ char rcv_direction()
 // It tries to listen left / right encoder
 void start(int fd)
 {
-	char buf[10];
+	char buf[1];
 
 	pthread_t p_thread[1];
 	int thr_id;
 	int status;
 
 	sprintf(buf, "%c", Start);
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %d\n", buf[0]);
 	write(fd, buf, 1);
 
 	sprintf(buf, "%c", SafeMode);
-	printf("[+] Send msg : %s\n", buf);
+	printf("[+] Send msg : %d\n", buf[0]);
 	write(fd, buf, 1);
 
-	right(fd);
+	startTime = clock();
+
+	// Request encoder stream
+	request_censor(fd);
 
 	// Listen to encoders by creating a thread
 	thr_id = pthread_create(&p_thread[0], NULL, receive_censor, (void *)&fd);
@@ -427,36 +433,57 @@ void zigzag(int fd, int length, int width, int req_num_length)
 	}
 }
 
-// Interrupt Routine to read in serial sensor data packets - Encoder sensor only
+// request stream for left / right encoding
+void request_censor(int fd)
+{
+	char buf[4];
+
+	// request censor stream for two bytes (LeftCnt / RightCnt)
+	sprintf(buf, "%c%c%c%c", SensorStream, 2, LeftEncoderCounts, RightEncoderCounts);
+	write(fd, buf, 4);
+
+	usleep( 15 * 1000 );
+}
+
+// Interrupt routine to read in serial sensor data packets - Encoder sensor only
 void *receive_censor(void *v_fd)
 {
 	int fd = *(int *)v_fd;
-	char buf[5];
-	char start_character;
+	unsigned char leftHi; // left encoder 
+	unsigned char leftLo;
+	unsigned char rightHi;
+	unsigned char rightLo;
 	unsigned char data_packet[C_PACKET_SIZE];
+	float elapsedTime;
 
 	while(1)
 	{
-		// request censor left and right
-		sprintf(buf, "%c%c", Sensors, LeftEncoderCounts);
-		write(fd, buf, 2);
-
-		usleep( 15 * 1000 );
-
-		//sprintf(buf, "%c%c", Sensors, RightEncoderCounts);
-		//write(fd, buf, 2);
-
-		//usleep( 15 * 1000 );
-
+		// The data received should be 9 bytes
+		// [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
+		// [19][6][43][xxxx][44][xxxx][xxx]
 		if(C_PACKET_SIZE != read(fd, data_packet, C_PACKET_SIZE))
 		{
-			//printf("Not Valid Packet size\n");
-			//printf("%s\n", data_packet);
+			//printf("Not valid packet size\n");
 			continue;
 		}
 
-		printf("2 bytes Received! %d %d\n", data_packet[0], data_packet[1]);
-		usleep(10000);
-	}
+		// 9 bytes detected. check header and bytes
+		if(data_packet[0] == 19 && data_packet[1] == 6)
+		{
+			// check packet ID 1
+			if(data_packet[2] != 43 || data_packet[5] != 44)
+			{
+				continue;
+			}
+			leftHi = data_packet[3];
+			leftLo = data_packet[4];
+			rightHi = data_packet[6];
+			rightLo = data_packet[7];
 
+			elapsedTime = (startTime - clock())/CLOCKS_PER_SEC;
+			// save the left encoder data
+			printf("[%f] Left/Right : [%u %u]\t[%u %u]\n", elapsedTime, leftHi, leftLo, rightHi, rightLo);
+			usleep(500);
+		}
+	}
 }
