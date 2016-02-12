@@ -438,10 +438,10 @@ void *receive_censor(void *v_fd)
 
 		usleep( 15 * 1000 );
 
-		sprintf(buf, "%c%c", Sensors, RightEncoderCounts);
-		write(fd, buf, 2);
+		//sprintf(buf, "%c%c", Sensors, RightEncoderCounts);
+		//write(fd, buf, 2);
 
-		usleep( 15 * 1000 );
+		//usleep( 15 * 1000 );
 
 		if(C_PACKET_SIZE != read(fd, data_packet, C_PACKET_SIZE))
 		{
