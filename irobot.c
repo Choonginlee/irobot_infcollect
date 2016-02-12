@@ -573,7 +573,7 @@ void GrabImages(fc2Context context)
     fc2Image rawImage;
     fc2Image convertedImage;
     char filePath[10];
-    char writeLine[10];
+    char writeLine[100];
     float elapsedTime;
     int imageCnt = 0;
     int fdTxt; // file descriptor for writing file
