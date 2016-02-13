@@ -92,6 +92,11 @@ void main()
 	fdXG = setXG();
 	fdIrobot = setIRobot();
 
+	// for zigzag argument
+	int length;
+	int width;
+	int numlength;
+
 	showInstruction();
 
 	while(1)
@@ -113,7 +118,9 @@ void main()
 				showInstruction();
 				break;
 			case 4:
-				zigzag(fdIrobot, 1000, 500, 3);
+				printf("[Q] Please enter length / width / # of length : ");
+				scanf("%d %d %d", &length, &width, &numlength);
+				zigzag(fdIrobot, length, width, numlength);
 				stop(fdIrobot);
 				break;
 			case 5:
