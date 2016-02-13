@@ -638,7 +638,7 @@ void GrabImages(fc2Context context)
 	        }
 
 	        imageCnt++;
-			elapsedTime = (clock()-startTime)/10000.0;
+			elapsedTime = (clock()-startTime)/1000.0;
 
 			// Record saved image info
 	        sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
@@ -647,12 +647,12 @@ void GrabImages(fc2Context context)
 	        	encElapsedTime, encLeftCnt, encRightCnt);
 	        write(fdTxt, writeLine, strlen(writeLine));
 
-	        // Save it to PNG
-	        sprintf(filePath, "./result/%d.png", imageCnt);
-			error = fc2SaveImage( &convertedImage, filePath, FC2_PNG );
+	        // Save it to jpeg
+	        sprintf(filePath, "./result/%d.jpeg", imageCnt);
+			error = fc2SaveImage( &convertedImage, filePath, FC2_JPEG );
 			if ( error != FC2_ERROR_OK )
 			{
-				printf( "[-] Error in saving image %d.png: %d\n", imageCnt, error );
+				printf( "[-] Error in saving image %d.jpeg: %d\n", imageCnt, error );
 				printf( "[-] Please check write permissions.\n");
 				exit(-1);
 			}
@@ -714,7 +714,7 @@ void *receiveCensorXG(void *v_fd)
 			continue;
 		}
 
-		xgElapsedTime = (clock()-startTime)/10000.0;
+		xgElapsedTime = (clock()-startTime)/1000.0;
 	 	xgAngleData = angle_int;
 
 		usleep( 15 * 1000 );
@@ -762,7 +762,7 @@ void *receiveCensorEnc(void *v_fd)
 			leften = *(short *)&data_packet[3];
 			righten = *(short *)&data_packet[6];
 
-			encElapsedTime = (clock()-startTime)/10000.0;
+			encElapsedTime = (clock()-startTime)/1000.0;
 			encLeftCnt = leften;
 			encRightCnt = righten;
 			//printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
