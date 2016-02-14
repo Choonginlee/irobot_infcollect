@@ -43,12 +43,12 @@ const char         RightEncoderCounts = 44;
 const int          PACKET_SIZE = 8; 			// XG packet size
 const int          C_PACKET_SIZE = 9;			// irobot packet size
 const float        MM_PER_COUNTER = 0.4446;		// mm travel per counter
-const float        COUNTER_PER_RANGLE = 415.1667; // counters per 90 angle rotation
+const int          COUNTER_PER_RANGLE = 410;    // counters per 90 angle
 
 clock_t startTime;
 
-int SPEED_LEFT =  200;
-int SPEED_RIGHT = 200;
+int SPEED_LEFT =  100;
+int SPEED_RIGHT = 100;
 
 float xgElapsedTime;
 float xgAngleData;
@@ -75,6 +75,8 @@ void leftAngle(int fd, int angle);
 void right(int fd);
 void rightAngle(int fd, int angle);
 void stop(int fd);		// stop driving
+void stopLeft(int fd);
+void stopRight(int fd);
 void zigzag(int fd, int length, int width, int req_num_length);
 
 void *receivePGRCapture(void *v_context);
@@ -408,10 +410,10 @@ void forward(int fd) // forward straight
 void forwardDistance(int fd, int distance) // forward for distnace
 {
 	char buf[5];
-	int tempEncLeft;
-	int tempEncRight;
-	int leftCntTraveled;
-	int rightCntTraveled;
+	unsigned short tempEncLeft;
+	unsigned short tempEncRight;
+	unsigned short leftCntTraveled;
+	unsigned short rightCntTraveled;
 	int cntNeeded;  // counters needed to reach distance requested
 
 	sprintf(buf, "%c%c%c%c%c",
@@ -433,6 +435,7 @@ void forwardDistance(int fd, int distance) // forward for distnace
 	printf("cntNeeded : %d\n\n", cntNeeded);
 	while(1)
 	{
+		// plus acc.
 		if(tempEncLeft > encLeftCnt)
 			leftCntTraveled += (0xFFFF - (tempEncLeft - encLeftCnt));
 		else
@@ -440,6 +443,7 @@ void forwardDistance(int fd, int distance) // forward for distnace
 
 		tempEncLeft = encLeftCnt;
 
+		// plus acc.
 		if(tempEncRight > encRightCnt)
 			rightCntTraveled += (0xFFFF - (tempEncRight - encRightCnt));
 		else
@@ -447,13 +451,13 @@ void forwardDistance(int fd, int distance) // forward for distnace
 
 		tempEncRight = encRightCnt;
 
-		if(leftCntTraveled > cntNeeded && rightCntTraveled > cntNeeded)
+		if(leftCntTraveled >= cntNeeded && rightCntTraveled >= cntNeeded)
 		{
-			printf("[+] Stop forward. Counts to travel : %d %d\n", leftCntTraveled, rightCntTraveled);
+			printf("[+] Stop forward. Counts to travel : +%d +%d\n", leftCntTraveled, rightCntTraveled);
 			stop(fd);
 			break;
 		}
-		usleep( 15 * 1000 );
+		usleep( 5 * 1000 );
 	}
 }
 
@@ -473,10 +477,10 @@ void reverse(int fd) // backward straight
 void reverseDistance(int fd, int distance) // backward for distance 
 {
 	char buf[5];
-	int tempEncLeft;
-	int tempEncRight;
-	int leftCntTraveled;
-	int rightCntTraveled;
+	unsigned short tempEncLeft;
+	unsigned short tempEncRight;
+	unsigned short leftCntTraveled;
+	unsigned short rightCntTraveled;
 	int cntNeeded;  // counters needed to reach distance requested
 
 		sprintf(buf, "%c%c%c%c%c", 
@@ -494,30 +498,33 @@ void reverseDistance(int fd, int distance) // backward for distance
 
 	// Check left / right counter until reach distance
 	// Use MM_PER_COUNTER
-	cntNeeded = -(int)((float)distance/MM_PER_COUNTER);
+	cntNeeded = (int)((float)distance/MM_PER_COUNTER);
+	printf("cntNeeded : %d\n\n", cntNeeded);
 	while(1)
 	{
+		// minus acc.
 		if(tempEncLeft < encLeftCnt)
-			leftCntTraveled -= (0xFFFF - (tempEncLeft - encLeftCnt));
+			leftCntTraveled += (0xFFFF - (encLeftCnt - tempEncLeft)); 
 		else
-			leftCntTraveled -= (encLeftCnt - tempEncLeft);
+			leftCntTraveled += (tempEncLeft - encLeftCnt); 
 
 		tempEncLeft = encLeftCnt;
 
+		// minus acc.
 		if(tempEncRight < encRightCnt)
-			rightCntTraveled -= (0xFFFF - (tempEncRight - encRightCnt));
+			rightCntTraveled += (0xFFFF - (encRightCnt - tempEncRight));
 		else
-			rightCntTraveled -= (encRightCnt - tempEncRight);
+			rightCntTraveled += (tempEncRight - encRightCnt);
 
 		tempEncRight = encRightCnt;
 
-		if(leftCntTraveled < cntNeeded && rightCntTraveled < cntNeeded)
+		if(leftCntTraveled >= cntNeeded && rightCntTraveled >= cntNeeded)
 		{
-			printf("[+] Stop forward. Counts to travel : %d %d\n", leftCntTraveled, rightCntTraveled);
+			printf("[+] Stop backward. Counts to travel : -%d -%d\n", leftCntTraveled, rightCntTraveled);
 			stop(fd);
 			break;
 		}
-		usleep( 15 * 1000 );
+		usleep( 5 * 1000 );
 	}
 }
 
@@ -525,10 +532,10 @@ void left(int fd)
 {
 	char buf[5];
 
-		sprintf(buf, "%c%c%c%c%c", 
-			DriveDirect, 
-			(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
-			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
+	sprintf(buf, "%c%c%c%c%c", 
+		DriveDirect, 
+		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
+		(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
 
 	printf("[+] Send msg : (Left)\n");
 	write(fd, buf, 5);
@@ -537,17 +544,19 @@ void left(int fd)
 void leftAngle(int fd, int angle)
 {
 	char buf[5];
-	int tempEncLeft;
-	int tempEncRight;
-	int leftCntTraveled;
-	int rightCntTraveled;
+	unsigned short tempEncLeft;
+	unsigned short tempEncRight;
+	unsigned short leftCntTraveled;
+	unsigned short rightCntTraveled;
+	//bool isLeftStop;
+	//bool isRightStop;
 	int cntNeeded;  // counters needed to reach distance requested
 	int numOfRAngles;
 
-		sprintf(buf, "%c%c%c%c%c", 
-			DriveDirect, 
-			(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
-			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
+	sprintf(buf, "%c%c%c%c%c", 
+		Drive,
+		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
+		(char)(0), (char)(1)); // counter clockwise
 
 	printf("[+] Send msg : (Left for %d degree)\n", angle);
 	write(fd, buf, 5);
@@ -557,35 +566,60 @@ void leftAngle(int fd, int angle)
 	leftCntTraveled = 0;
 	rightCntTraveled = 0;
 	numOfRAngles = angle/90;	// How many right angles to turn?
+	//isLeftStop = false;
+	//isRightStop = false;
 
 	// Check left / right counter until reach distance
 	// Use COUNTER_PER_RANGLE
 	cntNeeded = COUNTER_PER_RANGLE * numOfRAngles;
+	printf("cntNeeded : %d\n\n", cntNeeded);
 	while(1)
 	{
 		// minus acc.
-		if(tempEncLeft < encLeftCnt)
-			leftCntTraveled += ( (encLeftCnt - tempEncLeft) - 0xFFFF ); // 65000 100
+		if((tempEncLeft+2) < encLeftCnt)
+		{
+			leftCntTraveled += (0xFFFF - (encLeftCnt - tempEncLeft));
+			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft);
+		} 
 		else
-			leftCntTraveled += ( encLeftCnt - tempEncLeft ); // after-before = minus
+			leftCntTraveled += (tempEncLeft - encLeftCnt); 
 
 		tempEncLeft = encLeftCnt;
 
 		// plus acc.
-		if(tempEncRight > encRightCnt)
-			rightCntTraveled += (0xFFFF - (tempEncRight - encRightCnt)); // 100 65000
+		if(tempEncRight > (encRightCnt+2))
+		{
+			rightCntTraveled += (0xFFFF - (tempEncRight - encRightCnt));
+			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft); 
+		}
 		else
-			rightCntTraveled += (encRightCnt - tempEncRight); // aftr-before = plus
+			rightCntTraveled += (encRightCnt - tempEncRight); 
 
 		tempEncRight = encRightCnt;
 
-		if(leftCntTraveled < -cntNeeded && rightCntTraveled > cntNeeded)
+/*
+		if(leftCntTraveled >= cntNeeded && isLeftStop == false)
 		{
-			printf("[+] Stop forward. Counts to travel : %d %d\n", leftCntTraveled, rightCntTraveled);
+			stopLeft(fd);
+			printf("Counts to travel -%d %d\n", leftCntTraveled, rightCntTraveled);
+			isLeftStop = true;
+		}
+
+		if(rightCntTraveled >= cntNeeded && isRightStop == false)
+		{
+			stopRight(fd);
+			isRightStop == true;
+			printf("Counts to travel -%d %d\n", leftCntTraveled, rightCntTraveled);
+		}
+*/
+
+		if(leftCntTraveled >= cntNeeded || rightCntTraveled >= cntNeeded)
+		{
+			printf("[+] Stop left turn. Counts to travel : -%d %d\n", leftCntTraveled, rightCntTraveled);
 			stop(fd);
 			break;
 		}
-		usleep( 15 * 1000 );
+		usleep( 5 * 1000 );
 	}
 }
 
@@ -605,23 +639,27 @@ void right(int fd)
 void rightAngle(int fd, int angle)
 {
 	char buf[5];
-	int tempEncLeft;
-	int tempEncRight;
-	int leftCntTraveled;
-	int rightCntTraveled;
+	unsigned short tempEncLeft;
+	unsigned short tempEncRight;
+	unsigned short leftCntTraveled;
+	unsigned short rightCntTraveled;
 	int cntNeeded;  // counters needed to reach distance requested
 	int numOfRAngles;
+	//bool isLeftStop;
+	//bool isRightStop;
 
-		sprintf(buf, "%c%c%c%c%c", 
-			DriveDirect, 
-			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
-			(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
+	sprintf(buf, "%c%c%c%c%c", 
+		Drive, 
+		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
+		(char)(0xFF), (char)(0xFF)); //clockwise
 
 	tempEncLeft = encLeftCnt;
 	tempEncRight = encRightCnt;
 	leftCntTraveled = 0;
 	rightCntTraveled = 0;
 	numOfRAngles = angle/90;	// How many right angles to turn?
+	//isLeftStop = false;
+	//isRightStop = false;
 
 	printf("[+] Send msg :(Right)\n");
 	write(fd, buf, 5);
@@ -629,31 +667,52 @@ void rightAngle(int fd, int angle)
 	// Check left / right counter until reach distance
 	// Use COUNTER_PER_RANGLE
 	cntNeeded = COUNTER_PER_RANGLE * numOfRAngles;
+	printf("cntNeeded : %d\n\n", cntNeeded);
 	while(1)
 	{
 		// plus acc.
-		if(tempEncLeft > encLeftCnt)
+		if(tempEncLeft > (encLeftCnt+2))
+		{
 			leftCntTraveled += (0xFFFF - (tempEncLeft - encLeftCnt));
+			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft); 
+		}
 		else
 			leftCntTraveled += (encLeftCnt - tempEncLeft); // after-before = plus
 
 		tempEncLeft = encLeftCnt;
 
 		// minus acc.
-		if(tempEncRight < encRightCnt)
-			rightCntTraveled += ( (encRightCnt - tempEncRight) - 0xFFFF);
+		if((tempEncRight+2) < encRightCnt)
+		{
+			rightCntTraveled += (0xFFFF - (encRightCnt - tempEncRight));
+			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft); 
+		}
 		else
-			rightCntTraveled += (encRightCnt - tempEncRight); // after-before = minus
+			rightCntTraveled += (tempEncRight - encRightCnt);
 
 		tempEncRight = encRightCnt;
-
-		if(leftCntTraveled > cntNeeded && rightCntTraveled < -cntNeeded)
+/*
+		if(leftCntTraveled >= cntNeeded && isLeftStop == false)
 		{
-			printf("[+] Stop forward. Counts to travel : %d %d\n", leftCntTraveled, rightCntTraveled);
+			stopLeft(fd);
+			printf("Counts to travel %d -%d\n", leftCntTraveled, rightCntTraveled);
+			isLeftStop = true;
+		}
+
+		if(rightCntTraveled >= cntNeeded && isRightStop == false)
+		{
+			stopRight(fd);
+			printf("Counts to travel %d -%d\n", leftCntTraveled, rightCntTraveled);
+			isRightStop == true;
+		}
+*/
+		if(leftCntTraveled >= cntNeeded || rightCntTraveled >= cntNeeded)
+		{
+			printf("[+] Stop right turn. Counts to travel : %d -%d\n", leftCntTraveled, rightCntTraveled);
 			stop(fd);
 			break;
 		}
-		usleep( 15 * 1000 );
+		usleep( 5 * 1000 );
 	}
 }
 
@@ -667,6 +726,34 @@ void stop(int fd)
 		(char)(0),  (char)(0));
 
 	printf("[+] Send msg : %d%d%d%d%d (Stop Driving)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
+
+	write(fd, buf, 5);
+}
+
+void stopLeft(int fd)
+{
+	char buf[5];
+
+	sprintf(buf, "%c%c%c%c%c", 
+		DriveDirect, 
+		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF),  
+		(char)(0),  (char)(0));
+
+	printf("[+] Send msg : %d%d%d%d%d (Stop left motor only)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
+
+	write(fd, buf, 5);
+}
+
+void stopRight(int fd)
+{
+	char buf[5];
+
+	sprintf(buf, "%c%c%c%c%c", 
+		DriveDirect, 
+		(char)(0),  (char)(0),  
+		(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
+
+	printf("[+] Send msg : %d%d%d%d%d (Stop right motor only)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 
 	write(fd, buf, 5);
 }
@@ -813,13 +900,15 @@ void GrabImages(fc2Context context)
 				printf( "[-] Please check write permissions.\n");
 				exit(-1);
 			}
-	        
+	   
+
+	        usleep( 500 * 1000 );
 	        //printf("[+] [%f] Saving the last image to %d.png \n", elapsedTime, imageCnt);
 
 	    }
     }
 
-    error = fc2DestroyImage( &rawImage );
+	error = fc2DestroyImage( &rawImage );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2DestroyImage: %d\n", error );
