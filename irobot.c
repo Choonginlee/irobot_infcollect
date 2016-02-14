@@ -12,6 +12,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <time.h>
 #include "/usr/include/flycapture/C/FlyCapture2_C.h"
 
@@ -60,6 +61,9 @@ unsigned short encLeftCnt;						// WRITE * READ IN REAL-TIME
 unsigned short encRightCnt;						// WRITE * READ IN REAL-TIME
 // -- shared variable end
 
+// semapores
+sem_t xgSemapore;
+sem_t encSemapore;
 
 fc2Context setPGR();
 int setXG();
@@ -292,6 +296,7 @@ void start(fc2Context context, int fdXG, int fdIrobot)
 
 	pthread_t p_thread[3];
 	int thr_id[3];
+	int status;
 
 	sprintf(buf, "%c", Start);
 	printf("[+] Send msg : %d\n", buf[0]);
@@ -300,6 +305,20 @@ void start(fc2Context context, int fdXG, int fdIrobot)
 	sprintf(buf, "%c", SafeMode);
 	printf("[+] Send msg : %d\n", buf[0]);
 	write(fdIrobot, buf, 1);
+
+	status = sem_init(&xgSemapore, 0, 0);
+	if(status != 0)
+	{
+		perror("[-] xg semapore init error : ");
+		exit(0);
+	}
+
+	status = sem_init(&encSemapore, 0, 0);
+	if(status != 0)
+	{
+		perror("[-] enc semapore init error : ");
+		exit(0);
+	}
 
 	gettimeofday(&startTime, NULL);
 
@@ -957,12 +976,23 @@ void *receivePGRCapture(void *v_context)
 
         else if ( error == FC2_ERROR_OK )
     	{
+    		sem_wait(&xgSemapore);
+    		sem_wait(&encSemapore);
+
     		// For the sync of data, store the data from gyro and irobot right after image retrieval
     		xgElapsedTimeSync = xgElapsedTime;
     		xgAngleDataSync = xgAngleData;
     		encElapsedTimeSync = encElapsedTime;
     		encLeftCntSync = encLeftCnt;
     		encRightCntSync = encRightCnt;
+
+	  		// check and save the recording time of the retrieved data
+	  		// WARNING ** there can be gap between pgr capture time and the other capture time
+	  		// 		   ** because only pgr records the exact time from api when it records
+	  		// 		   ** so, sync of this data doesn't have to be considered.
+            fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage );
+			pgrElapsedTime = ((float)(ts.microSeconds))/1000.0;		// millisecconds
+			pgrElapsedTimeSync = pgrElapsedTime;
 
 	        // Convert the final image to RGB
 	        error = fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, &rawImage, &convertedImage);
@@ -974,14 +1004,6 @@ void *receivePGRCapture(void *v_context)
 	        }
 
 	        imageCnt++;
-
-	  		// check and save the recording time of the retrieved data
-	  		// WARNING ** there can be gap between pgr capture time and the other capture time
-	  		// 		   ** because only pgr records the exact time from api when it records
-	  		// 		   ** so, sync of this data doesn't have to be considered.
-            fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage );
-			pgrElapsedTime = (float)(ts.microSeconds)/1000.0;		// millisecconds
-			pgrElapsedTimeSync = pgrElapsedTime;
 
 			// Record saved image info
 			// It would be best if we lock when we write...
@@ -1095,7 +1117,9 @@ void *receiveCensorXG(void *v_fd)
 		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(double)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	 	xgAngleData = angle_int;
 
-		usleep( 15 * 1000 );
+		sem_post(&xgSemapore);
+
+		usleep( 5 * 1000 );
 	}
 }
 
@@ -1145,6 +1169,10 @@ void *receiveCensorEnc(void *v_fd)
 
 			encLeftCnt = leften;
 			encRightCnt = righten;
+
+			sem_post(&encSemapore);
+
+			usleep( 5 * 1000 );
 			//printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", encElapsedTime, leften, righten);
 		}
 	}
