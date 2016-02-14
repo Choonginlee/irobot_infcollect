@@ -84,6 +84,7 @@ void stopLeft(int fd);
 void stopRight(int fd);
 void zigzag(int fd, int length, int width, int req_num_length);
 
+void SetTimeStamping( fc2Context context, BOOL enableTimeStamp );
 void *receivePGRCapture(void *v_context);
 void stopPGRCapture(fc2Context context);
 void *receiveCensorXG(void *fd);
@@ -838,6 +839,29 @@ void zigzag(int fd, int length, int width, int req_num_length)
 			usleep( 300 * 1000 );
 		}
 	}
+}
+
+void SetTimeStamping( fc2Context context, BOOL enableTimeStamp )
+{
+    fc2Error error;
+    fc2EmbeddedImageInfo embeddedInfo;
+
+    error = fc2GetEmbeddedImageInfo( context, &embeddedInfo );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "Error in fc2GetEmbeddedImageInfo: %d\n", error );
+    }
+
+    if ( embeddedInfo.timestamp.available != 0 )
+    {       
+        embeddedInfo.timestamp.onOff = enableTimeStamp;
+    }    
+
+    error = fc2SetEmbeddedImageInfo( context, &embeddedInfo );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "Error in fc2SetEmbeddedImageInfo: %d\n", error );
+    }
 }
 
 // Thread for capturing images from PGR camera
