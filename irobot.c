@@ -966,8 +966,6 @@ void *receivePGRCapture(void *v_context)
 	        stopPGRCapture (context);
 	        exit(-1);
 	    }
-		
-		usleep( 70 * 1000 );
 
         // Retrieve the image
         error = fc2RetrieveBuffer( context, &rawImage );
