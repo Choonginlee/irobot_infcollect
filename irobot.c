@@ -1125,7 +1125,7 @@ void *receiveCensorXG(void *v_fd)
 		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(double)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	 	xgAngleData = angle_int;
 
-	 	status = sem_getvalue(&xgSemapore, &sval)
+	 	status = sem_getvalue(&xgSemapore, &sval);
 		if(status != 0)
 		{
 			perror("[-] xg semapore get value error : ");
