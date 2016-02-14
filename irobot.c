@@ -180,6 +180,21 @@ fc2Context setPGR()
         exit(-1);
     }
 
+    error = fc2Connect( context, &guid );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "[-] Error in fc2Connect: %d\n", error );
+
+    	// DestoryContext
+	    error = fc2DestroyContext( context );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "Error in fc2DestroyContext: %d\n", error );
+	    }
+
+        exit(-1);
+    }
+
 	return context;
 }
 
@@ -251,7 +266,7 @@ void showInstruction()
 	printf("4. To zigzag, Type 4\n");
 	printf("5. To quit and clear, Type 5\n\n");
 	printf("[Info] Please make sure to start by pressing 1 first.\n");
-	printf("[Info] Make sure you quit and clear previous data by re-executing and pressing 5 afterwards")
+	printf("[Info] Make sure you quit and clear previous data by re-executing and pressing 5 afterwards\n");
 	printf("[Info] Please check connection status before start.\n");
 	printf("[Info] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
 	printf("===============================\n");
@@ -856,21 +871,6 @@ void *receivePGRCapture(void *v_context)
 
     sprintf(writeLine, "TimeImg\tImage #\tTimeGyro\tdegree\tTimeEnc\tleftEnc\trightEnc\n");
     write(fdTxt, writeLine, strlen(writeLine));
-
-    error = fc2Connect( context, &guid );
-    if ( error != FC2_ERROR_OK )
-    {
-        printf( "[-] Error in fc2Connect: %d\n", error );
-
-    	// DestoryContext
-	    error = fc2DestroyContext( context );
-	    if ( error != FC2_ERROR_OK )
-	    {
-	        printf( "Error in fc2DestroyContext: %d\n", error );
-	    }
-
-        exit(-1);
-    }
 
     SetTimeStamping( context, TRUE );
 
