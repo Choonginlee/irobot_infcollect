@@ -1188,7 +1188,7 @@ void *receiveCensorEnc(void *v_fd)
 			encLeftCnt = leften;
 			encRightCnt = righten;
 
-		 	status = sem_getvalue(&encSemapore, &sval)
+		 	status = sem_getvalue(&encSemapore, &sval);
 			if(status != 0)
 			{
 				perror("[-] enc semapore get value error : ");
