@@ -1147,8 +1147,6 @@ void *receiveCensorEnc(void *v_fd)
 			encRightCnt = righten;
 			//printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", encElapsedTime, leften, righten);
 		}
-
-		usleep( 15 * 1000 );
 	}
 }
 
