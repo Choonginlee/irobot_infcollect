@@ -8,6 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+//#include <sys/time.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <pthread.h>
@@ -45,16 +46,20 @@ const int          C_PACKET_SIZE = 9;			// irobot packet size
 const float        MM_PER_COUNTER = 0.4446;		// mm travel per counter
 const int          COUNTER_PER_RANGLE = 410;    // counters per 90 angle
 
-clock_t startTime;
+// -- Variable shared among threads
+struct timeval startTime;
+int SPEED_LEFT =  100;							// slow speed in case of turning
+int SPEED_RIGHT = 100;							// slow speed in case of turning
+int SPEED_LEFT_STRAIGHT = 200;					// fast speed in case of straight
+int SPEED_RIGHT_STRAIGHT = 200;					// fast speed in case of straight
+float pgrElapsedTime;							// WRITE * READ IN REAL-TIME (Use api)
+float xgElapsedTime;							// WRITE * READ IN REAL-TIME
+float xgAngleData;								// WRITE * READ IN REAL-TIME
+float encElapsedTime;							// WRITE * READ IN REAL-TIME
+unsigned short encLeftCnt;						// WRITE * READ IN REAL-TIME
+unsigned short encRightCnt;						// WRITE * READ IN REAL-TIME
+// -- shared variable end
 
-int SPEED_LEFT =  100;
-int SPEED_RIGHT = 100;
-
-float xgElapsedTime;
-float xgAngleData;
-float encElapsedTime;
-unsigned short encLeftCnt;
-unsigned short encRightCnt;
 
 fc2Context setPGR();
 int setXG();
@@ -63,7 +68,7 @@ void showInstruction();
 int rcvCommand();
 
 void start(fc2Context context, int fdXG, int fdIrobot);
-void quit(int fd);		// stop OI
+void quit(int fd, fc2Context contextPGR);		// stop OI
 void clean(int fd);
 void drive(int fd);
 void forward(int fd);
@@ -80,10 +85,11 @@ void stopRight(int fd);
 void zigzag(int fd, int length, int width, int req_num_length);
 
 void *receivePGRCapture(void *v_context);
-void GrabImages(fc2Context context);
+void stopPGRCapture(fc2Context context);
 void *receiveCensorXG(void *fd);
 void requestCensorEnc(int fd);
 void *receiveCensorEnc(void *fd);
+void stopCensorEnc(int fd);
 
 void main()
 {
@@ -128,7 +134,7 @@ void main()
 				stop(fdIrobot);
 				break;
 			case 5:
-				quit(fdIrobot);
+				quit(fdIrobot, contextPGR);
 				return;
 			default:
 				break;
@@ -171,13 +177,6 @@ fc2Context setPGR()
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2GetCameraFromIndex: %d\n", error );
-        exit(-1);
-    }
-
-    error = fc2Connect( context, &guid );
-    if ( error != FC2_ERROR_OK )
-    {
-        printf( "[-] Error in fc2Connect: %d\n", error );
         exit(-1);
     }
 
@@ -250,10 +249,11 @@ void showInstruction()
 	printf("2. To clean, Type 2\n");
 	printf("3. To move around, Type 3\n");
 	printf("4. To zigzag, Type 4\n");
-	printf("5. To quit, Type 5\n\n");
-	printf("[+] Please make sure to start by pressing 1 first.\n");
-	printf("[+] Please check connection status before start.\n");
-	printf("[+] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
+	printf("5. To quit and clear, Type 5\n\n");
+	printf("[Info] Please make sure to start by pressing 1 first.\n");
+	printf("[Info] Make sure you quit and clear previous data by re-executing and pressing 5 afterwards")
+	printf("[Info] Please check connection status before start.\n");
+	printf("[Info] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
 	printf("===============================\n");
 }
 
@@ -285,7 +285,7 @@ void start(fc2Context context, int fdXG, int fdIrobot)
 	printf("[+] Send msg : %d\n", buf[0]);
 	write(fdIrobot, buf, 1);
 
-	startTime = clock();
+	gettimeofday(&startTime, NULL);
 
 	// camera captures by creating a thread & record all the info in 3 threads
 	thr_id[0] = pthread_create(&p_thread[0], NULL, receivePGRCapture, (void *)&context);
@@ -315,21 +315,13 @@ void start(fc2Context context, int fdXG, int fdIrobot)
 
 }
 
-void quit(int fd)
+void quit(int fd, fc2Context context)
 {
-	char buf[10];
-
+	stopPGRCapture(context);
 	stop(fd); // stop driving
+	stopCensorEnc(fd);
 
-	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
-	printf("[+] Send msg : %d%d (Pause Stream)\n", buf[0], buf[1]);
-	write(fd, buf, 2);
-
-	sprintf(buf, "%c", Stop); // stop OI
-	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
-	write(fd, buf, 1);
-
-	printf("\n[+] Goodbye..\n");
+	printf("\n[+] PGR / iRobot Sensor clear! Goodbye..\n");
 }
 
 void clean(int fd)
@@ -400,8 +392,8 @@ void forward(int fd) // forward straight
 
 	sprintf(buf, "%c%c%c%c%c",
 		DriveDirect,
-		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF),
-		(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
+		(char)((SPEED_RIGHT_STRAIGHT>>8)&0xFF), (char)(SPEED_RIGHT_STRAIGHT&0xFF),
+		(char)((SPEED_LEFT_STRAIGHT>>8)&0xFF), (char)(SPEED_LEFT_STRAIGHT&0xFF));
 
 	printf("[+] Send msg : (Forward straight)\n");
 	write(fd, buf, 5);
@@ -410,22 +402,33 @@ void forward(int fd) // forward straight
 void forwardDistance(int fd, int distance) // forward for distnace
 {
 	char buf[5];
-	unsigned short tempEncLeft;
-	unsigned short tempEncRight;
+
+	// For sync issue, we define values for storing encode counters.
+	// These values should be written once per loop and treated locally!
+	unsigned short encLeftNow;
+	unsigned short encRightNow;
+
+	// Define previous encoder variables to be recorded.
+	unsigned short encLeftPrev;
+	unsigned short encRightPrev;
+
+	// counters traveled for left/right encoders
 	unsigned short leftCntTraveled;
 	unsigned short rightCntTraveled;
-	int cntNeeded;  // counters needed to reach distance requested
+
+	// counters needed to reach distance requested
+	int cntNeeded;  
 
 	sprintf(buf, "%c%c%c%c%c",
 		DriveDirect,
-		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF),
-		(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
+		(char)((SPEED_RIGHT_STRAIGHT>>8)&0xFF), (char)(SPEED_RIGHT_STRAIGHT&0xFF),
+		(char)((SPEED_LEFT_STRAIGHT>>8)&0xFF), (char)(SPEED_LEFT_STRAIGHT&0xFF));
 
 	printf("[+] Send msg : (Forward for %d mm)\n", distance);
 	write(fd, buf, 5);
 
-	tempEncLeft = encLeftCnt;
-	tempEncRight = encRightCnt;
+	encLeftPrev = encLeftCnt;
+	encRightPrev = encRightCnt;
 	leftCntTraveled = 0;
 	rightCntTraveled = 0;
 
@@ -433,23 +436,28 @@ void forwardDistance(int fd, int distance) // forward for distnace
 	// Use MM_PER_COUNTER
 	cntNeeded = (int)((float)distance/MM_PER_COUNTER);
 	printf("cntNeeded : %d\n\n", cntNeeded);
+
 	while(1)
 	{
-		// plus acc.
-		if(tempEncLeft > encLeftCnt)
-			leftCntTraveled += (0xFFFF - (tempEncLeft - encLeftCnt));
-		else
-			leftCntTraveled += (encLeftCnt - tempEncLeft);
-
-		tempEncLeft = encLeftCnt;
+		// no more use of global value
+		encLeftNow = encLeftCnt;
+		encRightNow = encRightCnt;
 
 		// plus acc.
-		if(tempEncRight > encRightCnt)
-			rightCntTraveled += (0xFFFF - (tempEncRight - encRightCnt));
+		if(encLeftPrev > encLeftNow)
+			leftCntTraveled += (0xFFFF - (encLeftPrev - encLeftNow));
 		else
-			rightCntTraveled += (encRightCnt - tempEncRight);
+			leftCntTraveled += (encLeftNow - encLeftPrev);
 
-		tempEncRight = encRightCnt;
+		encLeftPrev = encLeftNow;
+
+		// plus acc.
+		if(encRightPrev > encRightNow)
+			rightCntTraveled += (0xFFFF - (encRightPrev - encRightNow));
+		else
+			rightCntTraveled += (encRightNow - encRightPrev);
+
+		encRightPrev = encRightNow;
 
 		if(leftCntTraveled >= cntNeeded && rightCntTraveled >= cntNeeded)
 		{
@@ -467,8 +475,8 @@ void reverse(int fd) // backward straight
 
 		sprintf(buf, "%c%c%c%c%c", 
 			DriveDirect,
-			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
-			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
+			(char)(((-SPEED_RIGHT_STRAIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT_STRAIGHT)&0xFF), 
+			(char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF), (char)((-SPEED_LEFT_STRAIGHT)&0xFF));
 
 	printf("[+] Send msg : (Backward straight)\n");
 	write(fd, buf, 5);
@@ -477,22 +485,33 @@ void reverse(int fd) // backward straight
 void reverseDistance(int fd, int distance) // backward for distance 
 {
 	char buf[5];
-	unsigned short tempEncLeft;
-	unsigned short tempEncRight;
+
+	// For sync issue, we define values for storing encode counters.
+	// These values should be written once per loop and treated locally!
+	unsigned short encLeftNow;
+	unsigned short encRightNow;
+
+	// Define previous encoder variables to be recorded.
+	unsigned short encLeftPrev;
+	unsigned short encRightPrev;
+
+	// counters traveled for left/right encoders
 	unsigned short leftCntTraveled;
 	unsigned short rightCntTraveled;
-	int cntNeeded;  // counters needed to reach distance requested
+
+	// counters needed to reach distance requested
+	int cntNeeded;  
 
 		sprintf(buf, "%c%c%c%c%c", 
 			DriveDirect,
-			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
-			(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
+			(char)(((-SPEED_RIGHT_STRAIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT_STRAIGHT)&0xFF), 
+			(char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF), (char)((-SPEED_LEFT_STRAIGHT)&0xFF));
 
 	printf("[+] Send msg : (Backward for %d mm)\n", distance);
 	write(fd, buf, 5);
 
-	tempEncLeft = encLeftCnt;
-	tempEncRight = encRightCnt;
+	encLeftPrev = encLeftCnt;
+	encRightPrev = encRightCnt;
 	leftCntTraveled = 0;
 	rightCntTraveled = 0;
 
@@ -500,23 +519,28 @@ void reverseDistance(int fd, int distance) // backward for distance
 	// Use MM_PER_COUNTER
 	cntNeeded = (int)((float)distance/MM_PER_COUNTER);
 	printf("cntNeeded : %d\n\n", cntNeeded);
+
 	while(1)
 	{
-		// minus acc.
-		if(tempEncLeft < encLeftCnt)
-			leftCntTraveled += (0xFFFF - (encLeftCnt - tempEncLeft)); 
-		else
-			leftCntTraveled += (tempEncLeft - encLeftCnt); 
-
-		tempEncLeft = encLeftCnt;
+		// no more use of global value
+		encLeftNow = encLeftCnt;
+		encRightNow = encRightCnt;
 
 		// minus acc.
-		if(tempEncRight < encRightCnt)
-			rightCntTraveled += (0xFFFF - (encRightCnt - tempEncRight));
+		if(encLeftPrev < encLeftNow)
+			leftCntTraveled += (0xFFFF - (encLeftNow - encLeftPrev)); 
 		else
-			rightCntTraveled += (tempEncRight - encRightCnt);
+			leftCntTraveled += (encLeftPrev - encLeftNow); 
 
-		tempEncRight = encRightCnt;
+		encLeftPrev = encLeftNow;
+
+		// minus acc.
+		if(encRightPrev < encRightNow)
+			rightCntTraveled += (0xFFFF - (encRightNow - encRightPrev));
+		else
+			rightCntTraveled += (encRightPrev - encRightNow);
+
+		encRightPrev = encRightNow;
 
 		if(leftCntTraveled >= cntNeeded && rightCntTraveled >= cntNeeded)
 		{
@@ -544,13 +568,23 @@ void left(int fd)
 void leftAngle(int fd, int angle)
 {
 	char buf[5];
-	unsigned short tempEncLeft;
-	unsigned short tempEncRight;
+
+	// For sync issue, we define values for storing encode counters.
+	// These values should be written once per loop and treated locally!
+	unsigned short encLeftNow;
+	unsigned short encRightNow;
+
+	// Define previous encoder variables to be recorded.
+	unsigned short encLeftPrev;
+	unsigned short encRightPrev;
+
+	// counters traveled for left/right encoders
 	unsigned short leftCntTraveled;
 	unsigned short rightCntTraveled;
-	//bool isLeftStop;
-	//bool isRightStop;
-	int cntNeeded;  // counters needed to reach distance requested
+
+	// counters needed to reach distance requested
+	int cntNeeded;  
+
 	int numOfRAngles;
 
 	sprintf(buf, "%c%c%c%c%c", 
@@ -561,57 +595,45 @@ void leftAngle(int fd, int angle)
 	printf("[+] Send msg : (Left for %d degree)\n", angle);
 	write(fd, buf, 5);
 
-	tempEncLeft = encLeftCnt;
-	tempEncRight = encRightCnt;
+	encLeftPrev = encLeftCnt;
+	encRightPrev = encRightCnt;
 	leftCntTraveled = 0;
 	rightCntTraveled = 0;
-	numOfRAngles = angle/90;	// How many right angles to turn?
-	//isLeftStop = false;
-	//isRightStop = false;
+	// How many right angles to turn?
+	numOfRAngles = angle/90;
 
 	// Check left / right counter until reach distance
 	// Use COUNTER_PER_RANGLE
 	cntNeeded = COUNTER_PER_RANGLE * numOfRAngles;
 	printf("cntNeeded : %d\n\n", cntNeeded);
+
 	while(1)
 	{
+		// no more use of global value
+		encLeftNow = encLeftCnt;
+		encRightNow = encRightCnt;
+
 		// minus acc.
-		if((tempEncLeft+2) < encLeftCnt)
+		if(encLeftPrev < encLeftNow)
 		{
-			leftCntTraveled += (0xFFFF - (encLeftCnt - tempEncLeft));
-			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft);
+			leftCntTraveled += (0xFFFF - (encLeftNow - encLeftPrev));
+			printf("Rollover..  encLeftNow : %u encLeftPrev : %u\t", encLeftNow, encLeftPrev);
 		} 
 		else
-			leftCntTraveled += (tempEncLeft - encLeftCnt); 
+			leftCntTraveled += (encLeftPrev - encLeftNow); 
 
-		tempEncLeft = encLeftCnt;
+		encLeftPrev = encLeftNow;
 
 		// plus acc.
-		if(tempEncRight > (encRightCnt+2))
+		if(encRightPrev > encRightNow)
 		{
-			rightCntTraveled += (0xFFFF - (tempEncRight - encRightCnt));
-			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft); 
+			rightCntTraveled += (0xFFFF - (encRightPrev - encRightNow));
+			printf("Rollover..  encRightNow : %u encRightPrev : %u\t", encRightNow, encRightPrev); 
 		}
 		else
-			rightCntTraveled += (encRightCnt - tempEncRight); 
+			rightCntTraveled += (encRightNow - encRightPrev); 
 
-		tempEncRight = encRightCnt;
-
-/*
-		if(leftCntTraveled >= cntNeeded && isLeftStop == false)
-		{
-			stopLeft(fd);
-			printf("Counts to travel -%d %d\n", leftCntTraveled, rightCntTraveled);
-			isLeftStop = true;
-		}
-
-		if(rightCntTraveled >= cntNeeded && isRightStop == false)
-		{
-			stopRight(fd);
-			isRightStop == true;
-			printf("Counts to travel -%d %d\n", leftCntTraveled, rightCntTraveled);
-		}
-*/
+		encRightPrev = encRightNow;
 
 		if(leftCntTraveled >= cntNeeded || rightCntTraveled >= cntNeeded)
 		{
@@ -639,73 +661,73 @@ void right(int fd)
 void rightAngle(int fd, int angle)
 {
 	char buf[5];
-	unsigned short tempEncLeft;
-	unsigned short tempEncRight;
+
+	// For sync issue, we define values for storing encode counters.
+	// These values should be written once per loop and treated locally!
+	unsigned short encLeftNow;
+	unsigned short encRightNow;
+
+	// Define previous encoder variables to be recorded.
+	unsigned short encLeftPrev;
+	unsigned short encRightPrev;
+
+	// counters traveled for left/right encoders
 	unsigned short leftCntTraveled;
 	unsigned short rightCntTraveled;
-	int cntNeeded;  // counters needed to reach distance requested
+
+	// counters needed to reach distance requested
+	int cntNeeded;  
+
 	int numOfRAngles;
-	//bool isLeftStop;
-	//bool isRightStop;
 
 	sprintf(buf, "%c%c%c%c%c", 
 		Drive, 
 		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
 		(char)(0xFF), (char)(0xFF)); //clockwise
 
-	tempEncLeft = encLeftCnt;
-	tempEncRight = encRightCnt;
-	leftCntTraveled = 0;
-	rightCntTraveled = 0;
-	numOfRAngles = angle/90;	// How many right angles to turn?
-	//isLeftStop = false;
-	//isRightStop = false;
-
 	printf("[+] Send msg :(Right)\n");
 	write(fd, buf, 5);
+
+	encLeftPrev = encLeftCnt;
+	encRightPrev = encRightCnt;
+	leftCntTraveled = 0;
+	rightCntTraveled = 0;
+	// How many right angles to turn?
+	numOfRAngles = angle/90;
 
 	// Check left / right counter until reach distance
 	// Use COUNTER_PER_RANGLE
 	cntNeeded = COUNTER_PER_RANGLE * numOfRAngles;
 	printf("cntNeeded : %d\n\n", cntNeeded);
+
 	while(1)
 	{
+		// no more use of global value
+		encLeftNow = encLeftCnt;
+		encRightNow = encRightCnt;
+
 		// plus acc.
-		if(tempEncLeft > (encLeftCnt+2))
+		if(encLeftPrev > encLeftNow)
 		{
-			leftCntTraveled += (0xFFFF - (tempEncLeft - encLeftCnt));
-			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft); 
+			leftCntTraveled += (0xFFFF - (encLeftPrev - encLeftNow));
+			printf("Rollover..  encLeftNow : %u encLeftPrev : %u\t", encLeftNow, encLeftPrev); 
 		}
 		else
-			leftCntTraveled += (encLeftCnt - tempEncLeft); // after-before = plus
+			leftCntTraveled += (encLeftNow - encLeftPrev); // after-before = plus
 
-		tempEncLeft = encLeftCnt;
+		encLeftPrev = encLeftNow;
 
 		// minus acc.
-		if((tempEncRight+2) < encRightCnt)
+		if(encRightPrev < encRightNow)
 		{
-			rightCntTraveled += (0xFFFF - (encRightCnt - tempEncRight));
-			printf("Rollover..  encLeftCnt : %u tempEncLeft : %u\t", encLeftCnt, tempEncLeft); 
+			rightCntTraveled += (0xFFFF - (encRightNow - encRightPrev));
+			printf("Rollover..  encRightNow : %u encRightPrev : %u\t", encRightNow, encRightPrev); 
 		}
 		else
-			rightCntTraveled += (tempEncRight - encRightCnt);
+			rightCntTraveled += (encRightPrev - encRightNow);
 
-		tempEncRight = encRightCnt;
-/*
-		if(leftCntTraveled >= cntNeeded && isLeftStop == false)
-		{
-			stopLeft(fd);
-			printf("Counts to travel %d -%d\n", leftCntTraveled, rightCntTraveled);
-			isLeftStop = true;
-		}
+		encRightPrev = encRightNow;
 
-		if(rightCntTraveled >= cntNeeded && isRightStop == false)
-		{
-			stopRight(fd);
-			printf("Counts to travel %d -%d\n", leftCntTraveled, rightCntTraveled);
-			isRightStop == true;
-		}
-*/
 		if(leftCntTraveled >= cntNeeded || rightCntTraveled >= cntNeeded)
 		{
 			printf("[+] Stop right turn. Counts to travel : %d -%d\n", leftCntTraveled, rightCntTraveled);
@@ -808,28 +830,23 @@ void *receivePGRCapture(void *v_context)
 {
 	fc2Context context = *(fc2Context *)v_context;
 	fc2Error error;
-
-    error = fc2StartCapture( context );
-    if ( error != FC2_ERROR_OK )
-    {
-        printf( "[-] Error in fc2StartCapture: %d\n", error );
-        exit(-1);
-    }
-
-    GrabImages(context);   
-}
-
-void GrabImages(fc2Context context)
-{
-    fc2Error error;
     fc2Image rawImage;
     fc2Image convertedImage;
     char filePath[10];
     char writeLine[100];
-    float elapsedTime;
     int imageCnt = 0;
     int fdTxt; // file descriptor for writing file
 
+    // Considering sync, we define temp data retrieved from gyro and encoder(irobot).
+    // This value is assgined from that of global value "right after retrieving buffer data"
+    float pgrElapsedTimeSync;
+    float xgElapsedTimeSync;
+    float xgAngleDataSync;
+    float encElapsedTimeSync;
+    unsigned short encLeftCntSync;
+    unsigned short encRightCntSync;
+
+    // ready for writing 
     fdTxt = open("./result/result.txt", O_WRONLY | O_CREAT, 0644);
 	if(fdTxt < 0)
 	{
@@ -840,17 +857,42 @@ void GrabImages(fc2Context context)
     sprintf(writeLine, "TimeImg\tImage #\tTimeGyro\tdegree\tTimeEnc\tleftEnc\trightEnc\n");
     write(fdTxt, writeLine, strlen(writeLine));
 
-    error = fc2CreateImage( &rawImage );
+    error = fc2Connect( context, &guid );
     if ( error != FC2_ERROR_OK )
     {
-        printf( "[-] Error in fc2CreateImage: %d\n", error );
+        printf( "[-] Error in fc2Connect: %d\n", error );
+
+    	// DestoryContext
+	    error = fc2DestroyContext( context );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "Error in fc2DestroyContext: %d\n", error );
+	    }
+
         exit(-1);
     }
 
-    error = fc2CreateImage( &convertedImage );
+    SetTimeStamping( context, TRUE );
+
+    error = fc2StartCapture( context );
     if ( error != FC2_ERROR_OK )
     {
-        printf( "[-] Error in fc2CreateImage: %d\n", error );
+        printf( "[-] Error in fc2StartCapture: %d\n", error );
+
+    	// Disconnect
+	    error = fc2Disconnect( context );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "Error in fc2Disconnect: %d\n", error );
+	    }
+
+		// DestoryContext
+	    error = fc2DestroyContext( context );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "Error in fc2DestroyContext: %d\n", error );
+	    }
+
         exit(-1);
     }
 
@@ -864,63 +906,127 @@ void GrabImages(fc2Context context)
 
     while(1)
     {
+	    error = fc2CreateImage( &rawImage );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "[-] Error in fc2CreateImage: %d\n", error );
+	        stopPGRCapture (context);
+	        exit(-1);
+	    }
+
+	    error = fc2CreateImage( &convertedImage );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "[-] Error in fc2CreateImage: %d\n", error );
+	        stopPGRCapture (context);
+	        exit(-1);
+	    }
+
         // Retrieve the image
         error = fc2RetrieveBuffer( context, &rawImage );
         if ( error != FC2_ERROR_OK )
         {
             printf( "[-] Error in retrieveBuffer: %d\n", error);
+	        stopPGRCapture (context);
             exit(-1);
         }
+
         else if ( error == FC2_ERROR_OK )
     	{
+    		// For the sync of data, store the data from gyro and irobot right after image retrieval
+    		xgElapsedTimeSync = xgElapsedTime;
+    		xgAngleDataSync = xgAngleData;
+    		encElapsedTimeSync = encElapsedTime;
+    		encLeftCntSync = encLeftCnt;
+    		encRightCntSync = encRightCnt;
+
 	        // Convert the final image to RGB
 	        error = fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, &rawImage, &convertedImage);
 	        if ( error != FC2_ERROR_OK )
 	        {
 	            printf( "[-] Error in fc2ConvertImageTo: %d\n", error );
+	        	stopPGRCapture (context);
 	            exit(-1);
 	        }
 
 	        imageCnt++;
-			elapsedTime = (clock()-startTime)/1000.0;
+
+	  		// check and save the recording time of the retrieved data
+	  		// WARNING ** there can be gap between pgr capture time and the other capture time
+	  		// 		   ** because only pgr records the exact time from api when it records
+	  		// 		   ** so, sync of this data doesn't have to be considered.
+            fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage );
+			pgrElapsedTime = (float)ts.microSeconds / 1000.0		// millisecconds
+			pgrElapsedTimeSync = pgrElapsedTime;
 
 			// Record saved image info
+			// It would be best if we lock when we write...
 	        sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
-	        	elapsedTime, imageCnt,
-	        	xgElapsedTime, (int)xgAngleData,
-	        	encElapsedTime, encLeftCnt, encRightCnt);
+	        	pgrElapsedTimeSync, imageCnt,							// record pgr data capture
+	        	xgElapsedTimeSync, (int)xgAngleDataSync,				// record gyro data capture
+	        	encElapsedTimeSync, encLeftCntSync, encRightCntSync);		// record irobot data capture
 	        write(fdTxt, writeLine, strlen(writeLine));
 
 	        // Save it to jpeg
 	        sprintf(filePath, "./result/%d.jpeg", imageCnt);
+
 			error = fc2SaveImage( &convertedImage, filePath, FC2_JPEG );
 			if ( error != FC2_ERROR_OK )
 			{
 				printf( "[-] Error in saving image %d.jpeg: %d\n", imageCnt, error );
 				printf( "[-] Please check write permissions.\n");
+	        	stopPGRCapture (context);
 				exit(-1);
 			}
-	   
-
-	        usleep( 500 * 1000 );
-	        //printf("[+] [%f] Saving the last image to %d.png \n", elapsedTime, imageCnt);
+	        //printf("[+] [%f] Saving the last image to %d.png \n", pgrElapsedTime, imageCnt);
 
 	    }
-    }
 
-	error = fc2DestroyImage( &rawImage );
+	    error = fc2DestroyImage( &rawImage );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "[-] Error in fc2DestroyImage: %d\n", error );
+	        stopPGRCapture (context);
+	        exit(-1);
+	    }
+
+	    error = fc2DestroyImage( &convertedImage );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "[-] Error in fc2DestroyImage: %d\n", error );
+	        stopPGRCapture (context);
+	        exit(-1);
+	    }
+    }
+}
+
+// for the safe use, set of disconnection from flycapture camera is called when error or exit
+void stopPGRCapture(fc2Context context)
+{
+	fc2Error error;
+
+	// Stop capture
+    error = fc2StopCapture( context );
     if ( error != FC2_ERROR_OK )
     {
-        printf( "[-] Error in fc2DestroyImage: %d\n", error );
-        exit(-1);
+        printf( "Error in fc2StopCapture: %d\n", error );
     }
 
-    error = fc2DestroyImage( &convertedImage );
+	// Disconnect
+    error = fc2Disconnect( context );
     if ( error != FC2_ERROR_OK )
     {
-        printf( "[-] Error in fc2DestroyImage: %d\n", error );
-        exit(-1);
+        printf( "Error in fc2Disconnect: %d\n", error );
     }
+
+	// DestoryContext
+    error = fc2DestroyContext( context );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "Error in fc2DestroyContext: %d\n", error );
+    }
+
+	printf("[+] PGR Camera working clear..")
 }
 
 void *receiveCensorXG(void *v_fd)
@@ -932,6 +1038,7 @@ void *receiveCensorXG(void *v_fd)
 	float rate_float;
 	float angle_float;
 	short check_sum;
+	struct timeval xgEndTime;
 	unsigned char data_packet[PACKET_SIZE];
 
 	while(1)
@@ -960,7 +1067,8 @@ void *receiveCensorXG(void *v_fd)
 			continue;
 		}
 
-		xgElapsedTime = (clock()-startTime)/1000.0;
+		gettimeofday(&xgEndTime, NULL)
+		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(doube)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)startTime.tv_usec)/1000000.0)
 	 	xgAngleData = angle_int;
 
 		usleep( 15 * 1000 );
@@ -983,8 +1091,8 @@ void *receiveCensorEnc(void *v_fd)
 	int fd = *(int *)v_fd;
 	unsigned short leften;
 	unsigned short righten;
+	struct timeval encEndTime;
 	unsigned char data_packet[C_PACKET_SIZE];
-	float elapsedTime;
 
 	while(1)
 	{
@@ -1008,12 +1116,27 @@ void *receiveCensorEnc(void *v_fd)
 			leften = (data_packet[3] << 8) | data_packet[4];
 			righten = (data_packet[6] << 8) | data_packet[7];
 
-			encElapsedTime = (clock()-startTime)/1000.0;
+			gettimeofday(&encEndTime, NULL)
+			encElapsedTime = ((double)(encEndTime.tv_sec)+(doube)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)startTime.tv_usec)/1000000.0)
+
 			encLeftCnt = leften;
 			encRightCnt = righten;
-			//printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", elapsedTime, leften, righten);
+			//printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", encElapsedTime, leften, righten);
 		}
 
 		usleep( 15 * 1000 );
 	}
+}
+
+void stopCensorEnc(int fd)
+{
+	char buf[2];
+
+	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
+	printf("[+] Send msg : %d%d (Pause Stream)\n", buf[0], buf[1]);
+	write(fd, buf, 2);
+
+	sprintf(buf, "%c", Stop); // stop OI
+	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
+	write(fd, buf, 1);
 }
