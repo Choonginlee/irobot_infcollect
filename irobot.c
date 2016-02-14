@@ -1007,8 +1007,8 @@ void *receivePGRCapture(void *v_context)
 
 			// Record saved image info
 			// It would be best if we lock when we write...
-	        sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
-	        	pgrElapsedTimeSync, imageCnt,							// record pgr data capture
+	        sprintf(writeLine, "%u, %d, %.4f, %d, %.4f, %u, %u\n", 
+	        	ts.microSeconds, imageCnt,							// record pgr data capture
 	        	xgElapsedTimeSync, (int)xgAngleDataSync,				// record gyro data capture
 	        	encElapsedTimeSync, encLeftCntSync, encRightCntSync);		// record irobot data capture
 	        write(fdTxt, writeLine, strlen(writeLine));
@@ -1055,21 +1055,21 @@ void stopPGRCapture(fc2Context context)
     error = fc2StopCapture( context );
     if ( error != FC2_ERROR_OK )
     {
-        printf( "Error in fc2StopCapture: %d\n", error );
+        //printf( "Error in fc2StopCapture: %d\n", error );
     }
 
 	// Disconnect
     error = fc2Disconnect( context );
     if ( error != FC2_ERROR_OK )
     {
-        printf( "Error in fc2Disconnect: %d\n", error );
+        //printf( "Error in fc2Disconnect: %d\n", error );
     }
 
 	// DestoryContext
     error = fc2DestroyContext( context );
     if ( error != FC2_ERROR_OK )
     {
-        printf( "Error in fc2DestroyContext: %d\n", error );
+        //printf( "Error in fc2DestroyContext: %d\n", error );
     }
 
 	printf("[+] PGR Camera working clear..\n");
@@ -1119,7 +1119,7 @@ void *receiveCensorXG(void *v_fd)
 
 		sem_post(&xgSemapore);
 
-		usleep( 5 * 1000 );
+		//usleep( 5 * 1000 );
 	}
 }
 
@@ -1172,7 +1172,7 @@ void *receiveCensorEnc(void *v_fd)
 
 			sem_post(&encSemapore);
 
-			usleep( 5 * 1000 );
+			//usleep( 5 * 1000 );
 			//printf("[+] [%f sec] Left/Right : [%u]\t[%u]\n", encElapsedTime, leften, righten);
 		}
 	}
