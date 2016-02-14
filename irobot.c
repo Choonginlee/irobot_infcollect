@@ -895,6 +895,8 @@ void *receivePGRCapture(void *v_context)
     int imageCnt = 0;
     int fdTxt; // file descriptor for writing file
 
+	struct timeval pgrEndTime;
+
     // Considering sync, we define temp data retrieved from gyro and encoder(irobot).
     // This value is assgined from that of global value "right after retrieving buffer data"
     float pgrElapsedTimeSync;
@@ -982,6 +984,9 @@ void *receivePGRCapture(void *v_context)
     		sem_wait(&encSemapore);
 
     		// For the sync of data, store the data from gyro and irobot right after image retrieval
+			gettimeofday(&pgrEndTime, NULL);
+			pgrElapsedTime = ((double)(pgrEndTime.tv_sec)+(double)(pgrEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+
     		xgElapsedTimeSync = xgElapsedTime;
     		xgAngleDataSync = xgAngleData;
     		encElapsedTimeSync = encElapsedTime;
@@ -1009,8 +1014,8 @@ void *receivePGRCapture(void *v_context)
 
 			// Record saved image info
 			// It would be best if we lock when we write...
-	        sprintf(writeLine, "%d.%d, %d, %.4f, %d, %.4f, %u, %u\n", 
-	        	ts.cycleSeconds, ts.cycleCount, imageCnt,				// record pgr data capture
+	        sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
+	        	pgrElapsedTime, imageCnt,				// record pgr data capture
 	        	xgElapsedTimeSync, (int)xgAngleDataSync,				// record gyro data capture
 	        	encElapsedTimeSync, encLeftCntSync, encRightCntSync);		// record irobot data capture
 	        write(fdTxt, writeLine, strlen(writeLine));
@@ -1086,6 +1091,8 @@ void *receiveCensorXG(void *v_fd)
 	float angle_float;
 	short check_sum;
 	struct timeval xgEndTime;
+	int *sval;
+	int status;
 	unsigned char data_packet[PACKET_SIZE];
 
 	while(1)
@@ -1118,7 +1125,15 @@ void *receiveCensorXG(void *v_fd)
 		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(double)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	 	xgAngleData = angle_int;
 
-		sem_post(&xgSemapore);
+	 	status = sem_getvalue(&xgSemapore, &sval)
+		if(status != 0)
+		{
+			perror("[-] xg semapore get value error : ");
+			exit(0);
+		}
+
+		if(*sval < 1)
+			sem_post(&xgSemapore);
 
 		//usleep( 5 * 1000 );
 	}
@@ -1142,6 +1157,8 @@ void *receiveCensorEnc(void *v_fd)
 	unsigned short righten;
 	struct timeval encEndTime;
 	unsigned char data_packet[C_PACKET_SIZE];
+	int *sval;
+	int status;
 
 	while(1)
 	{
@@ -1171,6 +1188,14 @@ void *receiveCensorEnc(void *v_fd)
 			encLeftCnt = leften;
 			encRightCnt = righten;
 
+		 	status = sem_getvalue(&encSemapore, &sval)
+			if(status != 0)
+			{
+				perror("[-] enc semapore get value error : ");
+				exit(0);
+			}
+
+			if(*sval < 1)
 			sem_post(&encSemapore);
 
 			//usleep( 5 * 1000 );
