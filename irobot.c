@@ -964,6 +964,8 @@ void *receivePGRCapture(void *v_context)
 	        stopPGRCapture (context);
 	        exit(-1);
 	    }
+		
+		usleep( 70 * 1000 );
 
         // Retrieve the image
         error = fc2RetrieveBuffer( context, &rawImage );
@@ -991,8 +993,8 @@ void *receivePGRCapture(void *v_context)
 	  		// 		   ** because only pgr records the exact time from api when it records
 	  		// 		   ** so, sync of this data doesn't have to be considered.
             fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage );
-			pgrElapsedTime = ((float)(ts.microSeconds))/1000.0;		// millisecconds
-			pgrElapsedTimeSync = pgrElapsedTime;
+			//pgrElapsedTime = ((float)(ts.microSeconds))/1000.0;		// millisecconds
+			//pgrElapsedTimeSync = pgrElapsedTime;
 
 	        // Convert the final image to RGB
 	        error = fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, &rawImage, &convertedImage);
@@ -1007,8 +1009,8 @@ void *receivePGRCapture(void *v_context)
 
 			// Record saved image info
 			// It would be best if we lock when we write...
-	        sprintf(writeLine, "%u, %d, %.4f, %d, %.4f, %u, %u\n", 
-	        	ts.microSeconds, imageCnt,							// record pgr data capture
+	        sprintf(writeLine, "%d.%d, %d, %.4f, %d, %.4f, %u, %u\n", 
+	        	ts.cycleSeconds, ts.cycleCount, imageCnt,				// record pgr data capture
 	        	xgElapsedTimeSync, (int)xgAngleDataSync,				// record gyro data capture
 	        	encElapsedTimeSync, encLeftCntSync, encRightCntSync);		// record irobot data capture
 	        write(fdTxt, writeLine, strlen(writeLine));
@@ -1025,7 +1027,6 @@ void *receivePGRCapture(void *v_context)
 				exit(-1);
 			}
 	        //printf("[+] [%f] Saving the last image to %d.png \n", pgrElapsedTime, imageCnt);
-			usleep( 70 * 1000 );
 	    }
 
 	    error = fc2DestroyImage( &rawImage );
