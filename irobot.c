@@ -1068,7 +1068,7 @@ void *receiveCensorXG(void *v_fd)
 		}
 
 		gettimeofday(&xgEndTime, NULL);
-		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(doube)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)startTime.tv_usec)/1000000.0);
+		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(double)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	 	xgAngleData = angle_int;
 
 		usleep( 15 * 1000 );
@@ -1117,7 +1117,7 @@ void *receiveCensorEnc(void *v_fd)
 			righten = (data_packet[6] << 8) | data_packet[7];
 
 			gettimeofday(&encEndTime, NULL);
-			encElapsedTime = ((double)(encEndTime.tv_sec)+(doube)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)startTime.tv_usec)/1000000.0);
+			encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 
 			encLeftCnt = leften;
 			encRightCnt = righten;
