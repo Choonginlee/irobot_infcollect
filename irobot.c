@@ -980,7 +980,7 @@ void *receivePGRCapture(void *v_context)
 	  		// 		   ** because only pgr records the exact time from api when it records
 	  		// 		   ** so, sync of this data doesn't have to be considered.
             fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage );
-			pgrElapsedTime = (float)ts.microSeconds/1000.0;		// millisecconds
+			pgrElapsedTime = (float)(ts.microSeconds)/1000.0;		// millisecconds
 			pgrElapsedTimeSync = pgrElapsedTime;
 
 			// Record saved image info
@@ -1003,7 +1003,7 @@ void *receivePGRCapture(void *v_context)
 				exit(-1);
 			}
 	        //printf("[+] [%f] Saving the last image to %d.png \n", pgrElapsedTime, imageCnt);
-
+			usleep( 70 * 1000 );
 	    }
 
 	    error = fc2DestroyImage( &rawImage );
