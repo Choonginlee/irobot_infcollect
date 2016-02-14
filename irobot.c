@@ -1091,7 +1091,7 @@ void *receiveCensorXG(void *v_fd)
 	float angle_float;
 	short check_sum;
 	struct timeval xgEndTime;
-	int *sval;
+	int sval;
 	int status;
 	unsigned char data_packet[PACKET_SIZE];
 
@@ -1132,7 +1132,7 @@ void *receiveCensorXG(void *v_fd)
 			exit(0);
 		}
 
-		if(*sval < 1)
+		if(sval < 1)
 			sem_post(&xgSemapore);
 
 		//usleep( 5 * 1000 );
@@ -1157,7 +1157,7 @@ void *receiveCensorEnc(void *v_fd)
 	unsigned short righten;
 	struct timeval encEndTime;
 	unsigned char data_packet[C_PACKET_SIZE];
-	int *sval;
+	int sval;
 	int status;
 
 	while(1)
@@ -1195,7 +1195,7 @@ void *receiveCensorEnc(void *v_fd)
 				exit(0);
 			}
 
-			if(*sval < 1)
+			if(sval < 1)
 			sem_post(&encSemapore);
 
 			//usleep( 5 * 1000 );
