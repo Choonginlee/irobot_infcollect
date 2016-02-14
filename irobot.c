@@ -956,7 +956,7 @@ void *receivePGRCapture(void *v_context)
 	  		// 		   ** because only pgr records the exact time from api when it records
 	  		// 		   ** so, sync of this data doesn't have to be considered.
             fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage );
-			pgrElapsedTime = (float)ts.microSeconds / 1000.0		// millisecconds
+			pgrElapsedTime = (float)ts.microSeconds/1000.0;		// millisecconds
 			pgrElapsedTimeSync = pgrElapsedTime;
 
 			// Record saved image info
@@ -1026,7 +1026,7 @@ void stopPGRCapture(fc2Context context)
         printf( "Error in fc2DestroyContext: %d\n", error );
     }
 
-	printf("[+] PGR Camera working clear..")
+	printf("[+] PGR Camera working clear..\n");
 }
 
 void *receiveCensorXG(void *v_fd)
@@ -1068,7 +1068,7 @@ void *receiveCensorXG(void *v_fd)
 		}
 
 		gettimeofday(&xgEndTime, NULL)
-		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(doube)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)startTime.tv_usec)/1000000.0)
+		xgElapsedTime = ((double)(xgEndTime.tv_sec)+(doube)(xgEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)startTime.tv_usec)/1000000.0);
 	 	xgAngleData = angle_int;
 
 		usleep( 15 * 1000 );
