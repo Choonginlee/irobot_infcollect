@@ -353,7 +353,7 @@ receiveRecord
 */
 void *receiveRecord(void *v_handler)
 {
-	Handlers handler = *(Handlers *)handler;
+	Handlers handler = *(Handlers *)v_handler;
     char filePath[10];
     char writeLine[100];
     int fdTxt; // file descriptor for writing file
@@ -448,7 +448,7 @@ void retrieveEncoder(Handlers handler)
 	write(handler.fdIRobot, buf, 2);
 	while(1)
 	{
-		if( IROBOT_PACKET_SIZE != read(handler.fdIRobot, data_packet, PACKET_SIZE) )
+		if( IROBOT_PACKET_SIZE != read(handler.fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
 			continue;
 
 		leften = (data_packet[0] << 8) | data_packet[1];
@@ -460,7 +460,7 @@ void retrieveEncoder(Handlers handler)
 	write(handler.fdIRobot, buf, 2);
 	while(1)
 	{
-		if( IROBOT_PACKET_SIZE != read(handler.fdIRobot, data_packet, PACKET_SIZE) )
+		if( IROBOT_PACKET_SIZE != read(handler.fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
 			continue;
 
 		righten = (data_packet[0] << 8) | data_packet[1];
