@@ -384,6 +384,14 @@ void quit()
 {
 	fc2Error error;
 	char buf[2];
+	
+	// stop drive
+	pauseDrive();
+
+ 	// pause stream
+	sprintf(buf, "%c%c", StreamPause, 0);
+	printf("[+] Send msg : %d%d (Pause Stream)\n", buf[0], buf[1]);
+	write(fd, buf, 2);
 
 	// stop OI
 	sprintf(buf, "%c", Stop);
