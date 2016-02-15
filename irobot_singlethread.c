@@ -71,6 +71,7 @@ void zigzag(int length, int width, int req_num_length);
 
 void start();					// send start and safemode command
 void reset();
+void clean():
 void quit();					// stop OI
 void pauseDrive();						// pauseDrive driving
 void forward();
@@ -377,7 +378,7 @@ void rightAngle(int angle)
 
 void clean()
 {
-	fd [1];
+	char buf[1];
 
 	sprintf(buf, "%c", Clean);
 	printf("Clean char. %d\n", buf[0]);
