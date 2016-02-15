@@ -375,9 +375,9 @@ void *receiveRecord(void *v_handler)
     // Start Recording
     while(1)
     {
-    	retrieveGyro(handler.fdGyro);
-    	retrieveEncoder(handler.fdIRobot);
-    	retrieveImage(handler.context);
+    	retrieveGyro(handler);
+    	retrieveEncoder(handler);
+    	retrieveImage(handler);
 
 		// Record saved image info
         sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
