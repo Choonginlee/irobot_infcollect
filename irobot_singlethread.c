@@ -59,10 +59,10 @@ int setGyro();
 int setIRobot();
 //void SetTimeStamping( fc2Context context, BOOL enableTimeStamp );
 
-void drive(Handlers handler);
-void zigzag(Handlers handler, int length, int width, int req_num_length);
+void drive(Handlers *handler);
+void zigzag(Handlers *handler, int length, int width, int req_num_length);
 
-void quit(Handlers handler);					// stop OI
+void quit(Handlers *handler);					// stop OI
 void pauseDrive(int fd);						// pauseDrive driving
 void forward(int fd);
 void reverse(int fd);
@@ -74,9 +74,9 @@ void leftAngle(int fd, int angle);
 void rightAngle(int fd, int angle);
 
 void *receiveRecord(void *v_handler);
-void retrieveGyro(Handlers handler);
-void retrieveEncoder(Handlers handler);
-void retrieveImage(Handlers handler);
+void retrieveGyro(Handlers *handler);
+void retrieveEncoder(Handlers *handler);
+void retrieveImage(Handlers *handler);
 
 /* 
 main
@@ -104,18 +104,18 @@ void main()
 		switch(cmdRcvd)
 		{
 			case 1:
-				drive(handler);
-				quit(handler);
+				drive(&handler);
+				quit(&handler);
 				break;
 			case 2:
 				return;
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
-				zigzag(handler, length, width, numlength);
-				quit(handler);
+				zigzag(&handler, length, width, numlength);
+				quit(&handler);
 				break;
 			case 3:
-				quit(handler);
+				quit(&handler);
 				break;
 			default:
 				printf("[-] Wrong input! Exit. : ");
@@ -151,7 +151,7 @@ drive
 - Make thread for receiveRecord
 - handle real-time key input
 */
-void drive(Handlers handler)
+void drive(Handlers *handler)
 {
 	pthread_t p_thread;
 	int thr_id;
@@ -159,7 +159,7 @@ void drive(Handlers handler)
 
 	char dir;
 
-	thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)&handler);
+	thr_id = pthread_create(&p_thread, NULL, receiveRecord, &handler);
 	if(thr_id < 0)
 	{
 		perror("[-] Thread create error : ");
@@ -178,23 +178,23 @@ void drive(Handlers handler)
 	    switch(dir) { // the real value
 	        case 'A':
 	            // code for arrow up
-	        	forward(handler.fdIRobot);
+	        	forward(handler->fdIRobot);
 	            break;
 	        case 'B':
 	            // code for arrow down
-	        	reverse(handler.fdIRobot);
+	        	reverse(handler->fdIRobot);
 	            break;
 	        case 'C':
 	            // code for arrow right
-	        	right(handler.fdIRobot);
+	        	right(handler->fdIRobot);
 	            break;
 	        case 'D':
 	            // code for arrow left
-	        	left(handler.fdIRobot);
+	        	left(handler->fdIRobot);
 	            break;
 	        case ' ':
 	        	// code for spacebar
-	        	pauseDrive(handler.fdIRobot);
+	        	pauseDrive(handler->fdIRobot);
 	        	break;
 	        case 0xA: 
 	        	// enter key
@@ -286,7 +286,7 @@ zigag
 - Make thread for receiveRecord
 - request length / width / # of length
 */
-void zigzag(Handlers handler, int length, int width, int req_num_length)
+void zigzag(Handlers *handler, int length, int width, int req_num_length)
 {
 
 }
@@ -324,26 +324,26 @@ quit
 - stop pgr capturing
 - exit
 */
-void quit(Handlers handler)
+void quit(Handlers *handler)
 {
 	fc2Error error;
 
 	// Stop capture
-    error = fc2StopCapture( handler.context );
+    error = fc2StopCapture( handler->context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2StopCapture: %d\n", error );
     }
 
 	// Disconnect
-    error = fc2Disconnect( handler.context );
+    error = fc2Disconnect( handler->context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2Disconnect: %d\n", error );
     }
 
 	// DestoryContext
-    error = fc2DestroyContext( handler.context );
+    error = fc2DestroyContext( handler->context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2DestroyContext: %d\n", error );
@@ -367,7 +367,7 @@ receiveRecord
 */
 void *receiveRecord(void *v_handler)
 {
-	Handlers handler = *(Handlers *)v_handler;
+	Handlers *handler = (Handlers *)v_handler;
     char filePath[10];
     char writeLine[100];
     int fdTxt; // file descriptor for writing file
@@ -404,7 +404,7 @@ void *receiveRecord(void *v_handler)
 
 }
 
-void retrieveGyro(Handlers handler)
+void retrieveGyro(Handlers *handler)
 {
 	short header;
 	short rate_int;
@@ -417,7 +417,7 @@ void retrieveGyro(Handlers handler)
 
 	while(1)
 	{
-		if(GYRO_PACKET_SIZE != read(handler.fdGyro, data_packet, GYRO_PACKET_SIZE))
+		if(GYRO_PACKET_SIZE != read(handler->fdGyro, data_packet, GYRO_PACKET_SIZE))
 		{
 			continue;
 		}
@@ -449,7 +449,7 @@ void retrieveGyro(Handlers handler)
 	}
 }
 
-void retrieveEncoder(Handlers handler)
+void retrieveEncoder(Handlers *handler)
 {
 	char buf[2];
 	unsigned short leften;
@@ -462,7 +462,7 @@ void retrieveEncoder(Handlers handler)
 	write(handler.fdIRobot, buf, 2);
 	while(1)
 	{
-		if( IROBOT_PACKET_SIZE != read(handler.fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
+		if( IROBOT_PACKET_SIZE != read(handler->fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
 			continue;
 
 		leften = (data_packet[0] << 8) | data_packet[1];
@@ -474,7 +474,7 @@ void retrieveEncoder(Handlers handler)
 	write(handler.fdIRobot, buf, 2);
 	while(1)
 	{
-		if( IROBOT_PACKET_SIZE != read(handler.fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
+		if( IROBOT_PACKET_SIZE != read(handler->fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
 			continue;
 
 		righten = (data_packet[0] << 8) | data_packet[1];
@@ -490,7 +490,7 @@ void retrieveEncoder(Handlers handler)
 	return;
 }
 
-void retrieveImage(Handlers handler)
+void retrieveImage(Handlers *handler)
 {
 	char filePath[10];
 	fc2Error error;
@@ -500,20 +500,20 @@ void retrieveImage(Handlers handler)
 
     int imageCnt = 0;
 
-    error = fc2StartCapture( handler.context );
+    error = fc2StartCapture( handler->context );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2StartCapture: %d\n", error );
 
     	// Disconnect
-	    error = fc2Disconnect( handler.context );
+	    error = fc2Disconnect( handler->context );
 	    if ( error != FC2_ERROR_OK )
 	    {
 	        printf( "[-] Error in fc2Disconnect: %d\n", error );
 	    }
 
 		// DestoryContext
-	    error = fc2DestroyContext( handler.context );
+	    error = fc2DestroyContext( handler->context );
 	    if ( error != FC2_ERROR_OK )
 	    {
 	        printf( "[-] Error in fc2DestroyContext: %d\n", error );
@@ -539,7 +539,7 @@ void retrieveImage(Handlers handler)
 	gettimeofday(&pgrEndTime, NULL);
 	
     // Retrieve the image
-    error = fc2RetrieveBuffer( handler.context, &rawImage );
+    error = fc2RetrieveBuffer( handler->context, &rawImage );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in retrieveBuffer: %d\n", error);
