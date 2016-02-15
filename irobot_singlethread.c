@@ -174,7 +174,9 @@ void start()
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	*/
-	
+	printf("LeftEncoderCounts. %d\n", LeftEncoderCounts);
+	printf("LeftEncoderCounts. %u\n", LeftEncoderCounts);
+
 	sprintf(buf, "%c", Start);
 	write(fdIRobot, buf, 1);
 	printf("Start char. %d\n", buf[0]);
