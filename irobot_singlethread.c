@@ -160,9 +160,11 @@ void start()
 	char buf[1];
 
 	buf[0] = (char)(Start);
+	printf("Start char. %c\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
 	buf[0] = (char)(SafeMode);
+	printf("SafeMode char. %c\n", buf[0]);
 	write(fdIRobot, buf, 1);
 }
 
