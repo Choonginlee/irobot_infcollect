@@ -183,13 +183,11 @@ void start()
 	write(fdIRobot, buf, 1);
 	printf("Start char. %d\n", buf[0]);
 
-	usleep( 100 * 1000 );
-
 	sprintf(buf, "%c", SafeMode);
 	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	usleep( 100 * 1000 );
+	usleep( 1000 * 1000 );
 
 	sprintf(buf, "%c", Clean);
 	printf("Clean char. %d\n", buf[0]);
