@@ -409,6 +409,8 @@ void quit()
 	printf("[+] Send msg : %d (Stop OI) \n", buf[0]);
 	write(fdIRobot, buf, 1);
 
+	printf("[+] iRobot working clear..\n");
+
 	// Stop capture
     error = fc2StopCapture( context );
     if ( error != FC2_ERROR_OK )
@@ -431,6 +433,12 @@ void quit()
     }
 
 	printf("[+] PGR Camera working clear..\n");
+
+	close(fdIRobot);
+	close(fdGyro);
+	printf("[+] Serial working clear..\n");
+
+
 	printf("=====   GOOD BYE   =====\n");
 
     exit(0);
