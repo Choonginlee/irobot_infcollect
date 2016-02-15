@@ -146,12 +146,12 @@ void main()
 void showInstruction()
 {
 	printf("=========================================\n");
-	printf("0. Start\t\t\t\t--> Type 0")
+	printf("0. Start\t\t\t\t--> Type 0");
 	printf("1. Realtime drive\t\t\t--> Type 1\n");
 	printf("2. Zigzag\t\t\t\t--> Type 2\n");
 	printf("3. Quit and Clear camera\t-> Type 3\n");
 	printf("4. Reset robot system\t\t--> Type 4\n\n");
-	printf("5. Clean\t\t\t\t--> Type 5")
+	printf("5. Clean\t\t\t\t--> Type 5");
 	printf("[Info] Make sure you clear previous data by pressing 3 after emergency stop.\n");
 	printf("[Info] Please check connection status before start.\n");
 	printf("[Info] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
