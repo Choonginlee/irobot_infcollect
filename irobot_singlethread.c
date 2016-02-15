@@ -113,14 +113,13 @@ void main()
 
 		switch(cmdRcvd)
 		{
-			case 0:
-				start();
-				break;
 			case 1:
+				start();
 				drive();
 				quit();
 				break;
 			case 2:
+				start();
 				return;
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
@@ -148,7 +147,6 @@ void main()
 void showInstruction()
 {
 	printf("=========================================\n");
-	printf("0. Start\t\t--> Type 0");
 	printf("1. Realtime drive\t--> Type 1\n");
 	printf("2. Zigzag\t\t--> Type 2\n");
 	printf("3. Quit and Clear camera\t-> Type 3\n");
@@ -172,7 +170,7 @@ void start()
 {
 	
 	char buf[1];
-	/*
+	
 	buf[0] = Start;
 	printf("Start char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
@@ -184,8 +182,8 @@ void start()
 	buf[0] = Clean;
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
-	*/
 	
+	/*
 	sprintf(buf, "%c", Start);
 	write(fdIRobot, buf, 1);
 	printf("Start char. %d\n", buf[0]);
@@ -193,7 +191,7 @@ void start()
 	sprintf(buf, "%c", SafeMode);
 	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
-
+	*/
 	usleep( 1000 * 1000 );
 	
 }
