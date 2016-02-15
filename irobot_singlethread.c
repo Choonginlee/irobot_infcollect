@@ -112,14 +112,14 @@ void main()
 
 		switch(cmdRcvd)
 		{
-			case 1:
+			case 0:
 				start();
+			case 1:
 				drive();
 				quit();
 				break;
 			case 2:
 				return;
-				start();
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
 				zigzag(length, width, numlength);
@@ -131,6 +131,8 @@ void main()
 			case 4:
 				reset();
 				break;
+			case 5:
+				clean();
 			default:
 				printf("[-] Wrong input! Exit. : ");
 				return;
@@ -143,10 +145,12 @@ void main()
 void showInstruction()
 {
 	printf("=========================================\n");
-	printf("1. Realtime drive 			--> Type 1\n");
-	printf("2. Zigzag 					--> Type 2\n");
-	printf("3. Quit and Clear camera 	--> Type 3\n");
-	printf("4. Reset robot system 		--> Type 4\n\n");
+	printf("0. Start\t\t\t\t--> Type 0")
+	printf("1. Realtime drive\t\t\t--> Type 1\n");
+	printf("2. Zigzag\t\t\t\t--> Type 2\n");
+	printf("3. Quit and Clear camera\t-> Type 3\n");
+	printf("4. Reset robot system\t\t--> Type 4\n\n");
+	printf("5. Clean\t\t\t\t--> Type 5")
 	printf("[Info] Make sure you clear previous data by pressing 3 after emergency stop.\n");
 	printf("[Info] Please check connection status before start.\n");
 	printf("[Info] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
@@ -188,10 +192,6 @@ void start()
 	write(fdIRobot, buf, 1);
 
 	usleep( 1000 * 1000 );
-
-	sprintf(buf, "%c", Clean);
-	printf("Clean char. %d\n", buf[0]);
-	write(fdIRobot, buf, 1);
 	
 }
 
@@ -375,6 +375,15 @@ void rightAngle(int angle)
 
 }
 
+void clean()
+{
+	fd [1];
+
+	sprintf(buf, "%c", Clean);
+	printf("Clean char. %d\n", buf[0]);
+	write(fdIRobot, buf, 1);
+}
+
 /*
 quit
 - stop pgr capturing
@@ -384,7 +393,7 @@ void quit()
 {
 	fc2Error error;
 	char buf[2];
-	
+
 	// stop drive
 	pauseDrive();
 
