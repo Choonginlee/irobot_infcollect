@@ -177,15 +177,15 @@ void start()
 	printf("LeftEncoderCounts. %d\n", LeftEncoderCounts);
 	printf("LeftEncoderCounts. %u\n", LeftEncoderCounts);
 
-	sprintf(buf, "%c", Start);
+	sprintf(buf, "%c", (unsigned char)Start);
 	write(fdIRobot, buf, 1);
 	printf("Start char. %d\n", buf[0]);
 
-	sprintf(buf, "%c", SafeMode);
+	sprintf(buf, "%c", (unsigned char)SafeMode);
 	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	sprintf(buf, "%c", Clean);
+	sprintf(buf, "%c", (unsigned char)Clean);
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	
