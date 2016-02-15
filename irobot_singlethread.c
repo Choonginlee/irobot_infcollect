@@ -104,14 +104,14 @@ void main()
 		switch(cmdRcvd)
 		{
 			case 1:
-				drive(handler.fdIRobot);
+				drive(handler);
 				quit(handler);
 				break;
 			case 2:
 				return;
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
-				zigzag(handler.fdIRobot, length, width, numlength);
+				zigzag(handler, length, width, numlength);
 				quit(handler);
 				break;
 			case 3:
@@ -351,7 +351,7 @@ receiveRecord
 - Record [1-3]
 - Retrieval method records data on global variable
 */
-void receiveRecord(void *v_handler)
+void *receiveRecord(void *v_handler)
 {
 	Handlers handler = *(Handlers *)handler;
     char filePath[10];
