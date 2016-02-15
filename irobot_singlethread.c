@@ -459,7 +459,7 @@ void retrieveEncoder(Handlers *handler)
 
 	// request censor stream for two bytes (LeftCnt)
 	sprintf(buf, "%c%c", Sensors, LeftEncoderCounts);
-	write(handler.fdIRobot, buf, 2);
+	write(handler->fdIRobot, buf, 2);
 	while(1)
 	{
 		if( IROBOT_PACKET_SIZE != read(handler->fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
@@ -471,7 +471,7 @@ void retrieveEncoder(Handlers *handler)
 
 	// request censor stream for two bytes (RightCnt)
 	sprintf(buf, "%c%c", Sensors, RightEncoderCounts);
-	write(handler.fdIRobot, buf, 2);
+	write(handler->fdIRobot, buf, 2);
 	while(1)
 	{
 		if( IROBOT_PACKET_SIZE != read(handler->fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
