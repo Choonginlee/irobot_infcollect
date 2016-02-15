@@ -478,6 +478,7 @@ void retrieveEncoder(Handlers handler)
 
 void retrieveImage(Handlers handler)
 {
+	char filePath[10];
 	fc2Error error;
     fc2Image rawImage;
     fc2Image convertedImage;
