@@ -391,7 +391,7 @@ void quit()
  	// pause stream
 	sprintf(buf, "%c%c", StreamPause, 0);
 	printf("[+] Send msg : %d%d (Pause Stream)\n", buf[0], buf[1]);
-	write(fd, buf, 2);
+	write(fdIRobot, buf, 2);
 
 	// stop OI
 	sprintf(buf, "%c", Stop);
