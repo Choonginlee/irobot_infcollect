@@ -159,12 +159,10 @@ void start()
 {
 	char buf[1];
 
-	sprintf(buf, "%c", Start);
-	printf("[+] Send msg : %d\n", buf[0]);
+	buf[0] = Start
 	write(fdIRobot, buf, 1);
 
-	sprintf(buf, "%c", SafeMode);
-	printf("[+] Send msg : %d\n", buf[0]);
+	buf[0] = SafeMode
 	write(fdIRobot, buf, 1);
 }
 
@@ -242,11 +240,11 @@ void forward()
 {
 	char buf[5];
 
-	sprintf(buf, "%c%c%c%c%c",
-		DriveDirect,
-		(char)((SPEED_RIGHT_STRAIGHT>>8)&0xFF), (char)(SPEED_RIGHT_STRAIGHT&0xFF),
-		(char)((SPEED_LEFT_STRAIGHT>>8)&0xFF), (char)(SPEED_LEFT_STRAIGHT&0xFF));
-
+	buf[0] = DriveDirect;
+	buf[1] = (char)((SPEED_RIGHT_STRAIGHT>>8)&0xFF);
+	buf[2] = (char)(SPEED_RIGHT_STRAIGHT&0xFF);
+	buf[3] = (char)((SPEED_LEFT_STRAIGHT>>8)&0xFF);
+	buf[4] = (char)(SPEED_LEFT_STRAIGHT&0xFF);
 	printf("[+] Send msg : (Forward straight)\n");
 	write(fdIRobot, buf, 5);
 }
@@ -255,11 +253,11 @@ void reverse()
 {
 	char buf[5];
 
-		sprintf(buf, "%c%c%c%c%c", 
-			DriveDirect,
-			(char)(((-SPEED_RIGHT_STRAIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT_STRAIGHT)&0xFF), 
-			(char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF), (char)((-SPEED_LEFT_STRAIGHT)&0xFF));
-
+	buf[0] = DriveDirect;
+	buf[1] = (char)(((-SPEED_RIGHT_STRAIGHT)>>8)&0xFF);
+	buf[2] = (char)((-SPEED_RIGHT_STRAIGHT)&0xFF);
+	buf[3] = (char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF);
+	buf[4] = (char)((-SPEED_LEFT_STRAIGHT)&0xFF);
 	printf("[+] Send msg : (Backward straight)\n");
 	write(fdIRobot, buf, 5);
 }
@@ -268,11 +266,11 @@ void left()
 {
 	char buf[5];
 
-	sprintf(buf, "%c%c%c%c%c", 
-		DriveDirect, 
-		(char)((SPEED_RIGHT>>8)&0xFF), (char)(SPEED_RIGHT&0xFF), 
-		(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
-
+	buf[0] = DriveDirect;
+	buf[1] = (char)((SPEED_RIGHT>>8)&0xFF);
+	buf[2] = (char)(SPEED_RIGHT&0xFF);
+	buf[3] = (char)(((-SPEED_LEFT)>>8)&0xFF);
+	buf[4] = (char)((-SPEED_LEFT)&0xFF);
 	printf("[+] Send msg : (Left)\n");
 	write(fdIRobot, buf, 5);
 }
@@ -280,12 +278,11 @@ void left()
 void right()
 {
 	char buf[5];
-
-		sprintf(buf, "%c%c%c%c%c", 
-			DriveDirect, 
-			(char)(((-SPEED_RIGHT)>>8)&0xFF), (char)((-SPEED_RIGHT)&0xFF), 
-			(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
-
+	buf[0] = DriveDirect;
+	buf[1] = (char)(((-SPEED_RIGHT)>>8)&0xFF);
+	buf[2] = (char)((-SPEED_RIGHT)&0xFF);
+	buf[3] = (char)((SPEED_LEFT>>8)&0xFF);
+	buf[4] = (char)(SPEED_LEFT&0xFF);
 	printf("[+] Send msg : (Right)\n");
 	write(fdIRobot, buf, 5);
 }
@@ -293,14 +290,12 @@ void right()
 void pauseDrive()
 {
 	char buf[5];
-
-	sprintf(buf, "%c%c%c%c%c", 
-		DriveDirect, 
-		(char)(0),  (char)(0),  
-		(char)(0),  (char)(0));
-
-	printf("[+] Send msg : %d%d%d%d%d (Pause Driving)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
-
+	buf[0] = DriveDirect;
+	buf[1] = (char)(0);
+	buf[2] = (char)(0);
+	buf[3] = (char)(0);
+	buf[4] = (char)(0);
+	printf("[+] Send msg :(Pause Driving)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 	write(fdIRobot, buf, 5);
 }
 
@@ -433,7 +428,10 @@ void *receiveRecord(void *status)
     }
 
 	// request censor stream for two bytes (LeftCnt / RightCnt)
-	sprintf(buf, "%c%c%c%c", SensorStream, 2, LeftEncoderCounts, RightEncoderCounts);
+	buf[0] = SensorStream;
+	buf[2] = 2;
+	buf[3] = LeftEncoderCounts;
+	buf[4] = RightEncoderCounts;
 	write(fdIRobot, buf, 4);
 
     // Start Recording
@@ -469,6 +467,9 @@ void retrieveGyro()
 	short check_sum;
 	struct timeval gyroEndTime;
 	unsigned char data_packet[GYRO_PACKET_SIZE];
+
+	// flush serial buffer before request
+	tcflush(fdGyro, TCIFLUSH);
 
 	//printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 
@@ -514,7 +515,11 @@ void retrieveEncoder()
 	struct timeval encEndTime;
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
-	sprintf(buf, "%c%c", StreamPause, 1); // resume stream
+	// flush serial buffer before request
+	tcflush(fdIRobot, TCIFLUSH);
+
+	buf[0] = StreamPause;
+	buf[1] = 1;
 	write(fdIRobot, buf, 2);
 
 	while(1)
@@ -545,7 +550,8 @@ void retrieveEncoder()
 
 	gettimeofday(&encEndTime, NULL);
 
-	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
+	buf[0] = StreamPause;
+	buf[1] = 0;
 	write(fdIRobot, buf, 2);
 
 	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
