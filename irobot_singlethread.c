@@ -158,7 +158,7 @@ int rcvCommand()
 void start()
 {
 	char buf[1];
-
+	/*
 	buf[0] = (char)(Start);
 	printf("Start char. %c\n", buf[0]);
 	write(fdIRobot, buf, 1);
@@ -170,7 +170,7 @@ void start()
 	buf[0] = (char)(Clean);
 	printf("Clean char. %c\n", buf[0]);
 	write(fdIRobot, buf, 1);
-	/*
+	*/
 	sprintf(buf, "%c", Start);
 	write(fdIRobot, buf, 1);
 	printf("Start char. %c\n", buf[0]);
@@ -178,7 +178,11 @@ void start()
 	sprintf(buf, "%c", SafeMode);
 	printf("SafeMode char. %c\n", buf[0]);
 	write(fdIRobot, buf, 1);
-	*/
+
+	sprintf(buf, "%c", Clean);
+	printf("Clean char. %c\n", buf[0]);
+	write(fdIRobot, buf, 1);
+	
 }
 
 /*
