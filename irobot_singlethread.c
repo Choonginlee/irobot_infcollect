@@ -135,6 +135,7 @@ void main()
 				break;
 			case 5:
 				clean();
+				break;
 			default:
 				printf("[-] Wrong input! Exit. : ");
 				return;
