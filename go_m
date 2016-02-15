@@ -1,0 +1,3 @@
+#!bin/bash
+
+gcc irobot_multithread.c -o irobot -lncurses -lpthread -lflycapture-c
