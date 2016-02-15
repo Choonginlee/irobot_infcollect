@@ -104,6 +104,7 @@ void main()
 		switch(cmdRcvd)
 		{
 			case 1:
+				printf("%d", handler.fdGyro)
 				drive(&handler);
 				quit(&handler);
 				break;
@@ -153,6 +154,7 @@ drive
 */
 void drive(Handlers *handler)
 {
+	printf("%d", handler->fdGyro);
 	pthread_t p_thread;
 	int thr_id;
 	int status;
