@@ -36,11 +36,11 @@ int SPEED_LEFT =  100;							// slow speed in case of turning
 int SPEED_RIGHT = 100;							// slow speed in case of turning
 int SPEED_LEFT_STRAIGHT = 200;					// fast speed in case of straight
 int SPEED_RIGHT_STRAIGHT = 200;					// fast speed in case of straight
-struct Handlers{								// structure for handlers (pgr, xg, irobot)
+typedef struct {								// structure for handlers (pgr, xg, irobot)
 	fc2Context context;
 	int fdGyro;
 	int fdIRobot;
-};											
+}Handlers;									
 
 // Global variable for record
 float gyroElapsedTime;
