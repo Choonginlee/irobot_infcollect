@@ -178,10 +178,6 @@ void start()
 	buf[0] = SafeMode;
 	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
-
-	buf[0] = Clean;
-	printf("Clean char. %d\n", buf[0]);
-	write(fdIRobot, buf, 1);
 	
 	/*
 	sprintf(buf, "%c", Start);
@@ -200,7 +196,7 @@ void reset()
 {
 	char buf[1];
 
-	sprintf(buf, "%c", Reset);
+	buf[0] = Reset;
 	printf("[+] Send msg : %d (Reset robot) \n", buf[0]);
 	write(fdIRobot, buf, 1);
 }
@@ -380,7 +376,7 @@ void clean()
 {
 	char buf[1];
 
-	sprintf(buf, "%c", Clean);
+	buf[0] = Clean
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 }
@@ -399,12 +395,13 @@ void quit()
 	pauseDrive();
 
  	// pause stream
-	sprintf(buf, "%c%c", StreamPause, 0);
+	buf[0] = StreamPause;
+	buf[1] = 0;
 	printf("[+] Send msg : %d%d (Pause Stream)\n", buf[0], buf[1]);
 	write(fdIRobot, buf, 2);
 
 	// stop OI
-	sprintf(buf, "%c", Stop);
+	buf[0] = Stop;
 	printf("[+] Send msg : %d (Stop OI) \n", buf[0]);
 	write(fdIRobot, buf, 1);
 
