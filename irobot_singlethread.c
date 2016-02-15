@@ -267,6 +267,20 @@ void right(int fd)
 	write(fd, buf, 5);
 }
 
+void pauseDrive(int fd)
+{
+	char buf[5];
+
+	sprintf(buf, "%c%c%c%c%c", 
+		DriveDirect, 
+		(char)(0),  (char)(0),  
+		(char)(0),  (char)(0));
+
+	printf("[+] Send msg : %d%d%d%d%d (Pause Driving)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
+
+	write(fd, buf, 5);
+}
+
 /*
 zigag
 - Make thread for receiveRecord
