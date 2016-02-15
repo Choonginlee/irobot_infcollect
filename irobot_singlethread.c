@@ -73,7 +73,7 @@ void reverseDistance(int fd, int distance);
 void leftAngle(int fd, int angle);
 void rightAngle(int fd, int angle);
 
-void receiveRecord(void *v_handler);
+void *receiveRecord(void *v_handler);
 void retrieveGyro(Handlers handler);
 void retrieveEncoder(Handlers handler);
 void retrieveImage(Handlers handler);
@@ -178,23 +178,23 @@ void drive(Handlers handler)
 	    switch(dir) { // the real value
 	        case 'A':
 	            // code for arrow up
-	        	forward(fd);
+	        	forward(handler.fdIRobot);
 	            break;
 	        case 'B':
 	            // code for arrow down
-	        	reverse(fd);
+	        	reverse(handler.fdIRobot);
 	            break;
 	        case 'C':
 	            // code for arrow right
-	        	right(fd);
+	        	right(handler.fdIRobot);
 	            break;
 	        case 'D':
 	            // code for arrow left
-	        	left(fd);
+	        	left(handler.fdIRobot);
 	            break;
 	        case ' ':
 	        	// code for spacebar
-	        	pauseDrive(fd);
+	        	pauseDrive(handler.fdIRobot);
 	        	break;
 	        case 0xA: 
 	        	// enter key
