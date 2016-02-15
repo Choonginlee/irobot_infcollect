@@ -198,7 +198,7 @@ void reset()
 {
 	char buf[1];
 
-	buf[0] = Reset;
+	sprintf(buf, "%c", Resete);
 	printf("[+] Send msg : %d (Reset robot) \n", buf[0]);
 	write(fdIRobot, buf, 1);
 }
