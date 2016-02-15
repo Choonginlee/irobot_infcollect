@@ -27,7 +27,7 @@ const char		Distance = 19;
 const char		Angle = 20;
 
 const int		GYRO_PACKET_SIZE = 8; 			// gyro packet size
-const int		IROBOT_PACKET_SIZE = 2;			// irobot packet size
+const int		IROBOT_PACKET_SIZE = 9;			// irobot packet size
 const float		MM_PER_COUNTER = 0.4446;		// mm travel per counter
 const int		COUNTER_PER_RANGLE = 410;		// counters per 90 angle
 
@@ -512,14 +512,14 @@ void retrieveEncoder()
 
 	// request censor stream for two bytes (LeftCnt / RightCnt)
 	sprintf(buf, "%c%c%c%c", SensorStream, 2, LeftEncoderCounts, RightEncoderCounts);
-	write(fd, buf, 4);
+	write(fdIRobot, buf, 4);
 
 	while(1)
 	{
 		// The data received should be 9 bytes
 		// [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
 		// [19][6][43][xxxx][44][xxxx][xxx]
-		if(C_PACKET_SIZE != read(fd, data_packet, C_PACKET_SIZE))
+		if(IROBOT_PACKET_SIZE != read(fd, data_packet, IROBOT_PACKET_SIZE))
 		{
 			//printf("Not valid packet size\n");
 			continue;
