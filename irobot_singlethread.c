@@ -18,7 +18,7 @@ const char		FullMode = 132;
 const char		Clean = 135;
 const char		DriveDirect = 145;				// 4:   [Right Hi] [Right Low] [Left Hi] [Left Low]
 const char		Sensors = 142;					// 1:    Sensor Packet ID
-const char		QueryList = 149;
+const char		SensorStream = 148;         // x+1: [# of packets requested] IDs of requested packets to stream
 
 //				iRobot Create 2 Packet IDs		//
 const char		LeftEncoderCounts = 43;
@@ -433,15 +433,14 @@ void *receiveRecord(void *status)
     // Start Recording
     while(1)
     {
-    	printf("[+] Enter retrieveEncoder \n");
+    	//printf("[+] Enter retrieveEncoder \n");
     	retrieveEncoder();
-    	printf("[+] Enter retrieveGyro \n");
+    	//printf("[+] Enter retrieveGyro \n");
     	retrieveGyro();
    		imageCnt++;
    		pgrImageNumber = imageCnt;
-    	printf("[+] Enter retrieveImage \n");
+    	//printf("[+] Enter retrieveImage \n");
     	retrieveImage();
-
 
 		// Record saved image info
         sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
@@ -449,6 +448,8 @@ void *receiveRecord(void *status)
         	gyroElapsedTime, gyroAngleData,				// record gyro data capture
         	encElapsedTime, encLeftCnt, encRightCnt);	// record irobot data capture
         write(fdTxt, writeLine, strlen(writeLine));
+
+        usleep(50 * 1000);
     }
 
 
@@ -503,37 +504,44 @@ void retrieveGyro()
 
 void retrieveEncoder()
 {
-	char buf[7];
+	char buf[4];
 	unsigned short leften;
 	unsigned short righten;
 	struct timeval encEndTime;
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
-	// request censor stream for two bytes (LeftCnt)
-	sprintf(buf, "%c%c%c%c%c%c%c", QueryList, 5,
-		LeftEncoderCounts, LeftEncoderCounts, LeftEncoderCounts, LeftEncoderCounts, LeftEncoderCounts);
-	write(fdIRobot, buf, 7);
+	// request censor stream for two bytes (LeftCnt / RightCnt)
+	sprintf(buf, "%c%c%c%c", SensorStream, 2, LeftEncoderCounts, RightEncoderCounts);
+	write(fd, buf, 4);
+
 	while(1)
 	{
-		if( IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
+		// The data received should be 9 bytes
+		// [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
+		// [19][6][43][xxxx][44][xxxx][xxx]
+		if(C_PACKET_SIZE != read(fd, data_packet, C_PACKET_SIZE))
+		{
+			//printf("Not valid packet size\n");
 			continue;
+		}
 
-		leften = (data_packet[0] << 8) | data_packet[1];
-		break;
+		// 9 bytes detected. check header and bytes
+		if(data_packet[0] == 19 && data_packet[1] == 6)
+		{
+			// check packet ID 1
+			if(data_packet[2] != 43 || data_packet[5] != 44)
+			{
+				continue;
+			}
+			leften = (data_packet[3] << 8) | data_packet[4];
+			righten = (data_packet[6] << 8) | data_packet[7];
+
+			break;
+		}
 	}
 
-	// request censor stream for two bytes (RightCnt)
-	sprintf(buf, "%c%c%c%c%c%c%c", QueryList, 5,
-		RightEncoderCounts, RightEncoderCounts, RightEncoderCounts, RightEncoderCounts, RightEncoderCounts);
-	write(fdIRobot, buf, 7);
-	while(1)
-	{
-		if( IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
-			continue;
-
-		righten = (data_packet[0] << 8) | data_packet[1];
-		break;
-	}
+	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
+	write(fd, buf, 2);
 
 	gettimeofday(&encEndTime, NULL);
 
