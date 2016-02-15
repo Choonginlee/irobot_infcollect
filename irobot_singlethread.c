@@ -172,11 +172,11 @@ void start()
 	char buf[1];
 	
 	buf[0] = Start;
-	printf("Start char. %d\n", buf[0]);
+	printf("[+] Start char. %x\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
 	buf[0] = SafeMode;
-	printf("SafeMode char. %d\n", buf[0]);
+	printf("[+] SafeMode char. %x\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	
 	/*
@@ -197,7 +197,7 @@ void reset()
 	char buf[1];
 
 	buf[0] = Reset;
-	printf("[+] Send msg : %d (Reset robot) \n", buf[0]);
+	printf("[+] Send msg : %x (Reset robot) \n", buf[0]);
 	write(fdIRobot, buf, 1);
 }
 
@@ -280,7 +280,7 @@ void forward()
 	buf[2] = (char)(SPEED_RIGHT_STRAIGHT&0xFF);
 	buf[3] = (char)((SPEED_LEFT_STRAIGHT>>8)&0xFF);
 	buf[4] = (char)(SPEED_LEFT_STRAIGHT&0xFF);
-	printf("[+] Send msg : (Forward straight)\n");
+	printf("[+] Send msg : %x%x%x%x%x(Forward straight)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 	write(fdIRobot, buf, 5);
 }
 
