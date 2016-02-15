@@ -104,7 +104,6 @@ void main()
 		switch(cmdRcvd)
 		{
 			case 1:
-				printf("%d", handler.fdGyro);
 				drive(&handler);
 				quit(&handler);
 				break;
@@ -115,7 +114,8 @@ void main()
 				zigzag(&handler, length, width, numlength);
 				quit(&handler);
 				break;
-			case 3:
+			case 3:				
+				printf("gyro : %d\n", handler.fdGyro);
 				quit(&handler);
 				break;
 			default:
@@ -154,7 +154,6 @@ drive
 */
 void drive(Handlers *handler)
 {
-	printf("%d", handler->fdGyro);
 	pthread_t p_thread;
 	int thr_id;
 	int status;
@@ -329,7 +328,7 @@ quit
 void quit(Handlers *handler)
 {
 	fc2Error error;
-
+	printf("gyro2 : %d\n", handler->fdGyro);
 	// Stop capture
     error = fc2StopCapture( handler->context );
     if ( error != FC2_ERROR_OK )
