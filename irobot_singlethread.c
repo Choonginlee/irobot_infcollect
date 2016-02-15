@@ -159,10 +159,10 @@ void start()
 {
 	char buf[1];
 
-	buf[0] = Start;
+	buf[0] = (char)(Start);
 	write(fdIRobot, buf, 1);
 
-	buf[0] = SafeMode;
+	buf[0] = (char)(SafeMode);
 	write(fdIRobot, buf, 1);
 }
 
@@ -240,7 +240,7 @@ void forward()
 {
 	char buf[5];
 
-	buf[0] = DriveDirect;
+	buf[0] = (char)(DriveDirect);
 	buf[1] = (char)((SPEED_RIGHT_STRAIGHT>>8)&0xFF);
 	buf[2] = (char)(SPEED_RIGHT_STRAIGHT&0xFF);
 	buf[3] = (char)((SPEED_LEFT_STRAIGHT>>8)&0xFF);
@@ -253,7 +253,7 @@ void reverse()
 {
 	char buf[5];
 
-	buf[0] = DriveDirect;
+	buf[0] = (char)(DriveDirect);
 	buf[1] = (char)(((-SPEED_RIGHT_STRAIGHT)>>8)&0xFF);
 	buf[2] = (char)((-SPEED_RIGHT_STRAIGHT)&0xFF);
 	buf[3] = (char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF);
@@ -266,7 +266,7 @@ void left()
 {
 	char buf[5];
 
-	buf[0] = DriveDirect;
+	buf[0] = (char)(DriveDirect);
 	buf[1] = (char)((SPEED_RIGHT>>8)&0xFF);
 	buf[2] = (char)(SPEED_RIGHT&0xFF);
 	buf[3] = (char)(((-SPEED_LEFT)>>8)&0xFF);
@@ -278,7 +278,7 @@ void left()
 void right()
 {
 	char buf[5];
-	buf[0] = DriveDirect;
+	buf[0] = (char)(DriveDirect);
 	buf[1] = (char)(((-SPEED_RIGHT)>>8)&0xFF);
 	buf[2] = (char)((-SPEED_RIGHT)&0xFF);
 	buf[3] = (char)((SPEED_LEFT>>8)&0xFF);
@@ -290,7 +290,7 @@ void right()
 void pauseDrive()
 {
 	char buf[5];
-	buf[0] = DriveDirect;
+	buf[0] = (char)(DriveDirect);
 	buf[1] = (char)(0);
 	buf[2] = (char)(0);
 	buf[3] = (char)(0);
@@ -428,10 +428,10 @@ void *receiveRecord(void *status)
     }
 
 	// request censor stream for two bytes (LeftCnt / RightCnt)
-	buf[0] = SensorStream;
-	buf[2] = 2;
-	buf[3] = LeftEncoderCounts;
-	buf[4] = RightEncoderCounts;
+	buf[0] = (char)(SensorStream);
+	buf[2] = (char)(2);
+	buf[3] = (char)(LeftEncoderCounts);
+	buf[4] = (char)(RightEncoderCounts);
 	write(fdIRobot, buf, 4);
 
     // Start Recording
@@ -518,8 +518,8 @@ void retrieveEncoder()
 	// flush serial buffer before request
 	tcflush(fdIRobot, TCIFLUSH);
 
-	buf[0] = StreamPause;
-	buf[1] = 1;
+	buf[0] = (char)(StreamPause);
+	buf[1] = (char)(1);
 	write(fdIRobot, buf, 2);
 
 	while(1)
@@ -550,8 +550,8 @@ void retrieveEncoder()
 
 	gettimeofday(&encEndTime, NULL);
 
-	buf[0] = StreamPause;
-	buf[1] = 0;
+	buf[0] = (char)(StreamPause);
+	buf[1] = (char)(0);
 	write(fdIRobot, buf, 2);
 
 	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
