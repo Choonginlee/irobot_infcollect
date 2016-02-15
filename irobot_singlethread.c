@@ -71,7 +71,7 @@ void zigzag(int length, int width, int req_num_length);
 
 void start();					// send start and safemode command
 void reset();
-void clean():
+void clean();
 void quit();					// stop OI
 void pauseDrive();						// pauseDrive driving
 void forward();
