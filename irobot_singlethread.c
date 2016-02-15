@@ -179,15 +179,6 @@ void start()
 	printf("[+] SafeMode char. %x\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	
-	/*
-	sprintf(buf, "%c", Start);
-	write(fdIRobot, buf, 1);
-	printf("Start char. %d\n", buf[0]);
-
-	sprintf(buf, "%c", SafeMode);
-	printf("SafeMode char. %d\n", buf[0]);
-	write(fdIRobot, buf, 1);
-	*/
 	usleep( 1000 * 1000 );
 	
 }
@@ -499,9 +490,9 @@ void *receiveRecord(void *status)
 
 	// request censor stream for two bytes (LeftCnt / RightCnt)
 	buf[0] = (char)(SensorStream);
-	buf[2] = (char)(2);
-	buf[3] = (char)(LeftEncoderCounts);
-	buf[4] = (char)(RightEncoderCounts);
+	buf[1] = (char)(2);
+	buf[2] = (char)(LeftEncoderCounts);
+	buf[3] = (char)(RightEncoderCounts);
 	write(fdIRobot, buf, 4);
 
     // Start Recording
