@@ -166,6 +166,14 @@ void start()
 	buf[0] = (char)(SafeMode);
 	printf("SafeMode char. %c\n", buf[0]);
 	write(fdIRobot, buf, 1);
+
+	sprintf(buf, "%c", Start);
+	write(fdIRobot, buf, 1);
+	printf("Start char. %c\n", buf[0]);
+
+	sprintf(buf, "%c", SafeMode);
+	printf("SafeMode char. %c\n", buf[0]);
+	write(fdIRobot, buf, 1);
 }
 
 /*
