@@ -62,6 +62,7 @@ int setIRobot();
 void drive(Handlers *handler);
 void zigzag(Handlers *handler, int length, int width, int req_num_length);
 
+void start(Handlers *handler);					// send start and safemode command
 void quit(Handlers *handler);					// stop OI
 void pauseDrive(int fd);						// pauseDrive driving
 void forward(int fd);
@@ -104,11 +105,13 @@ void main()
 		switch(cmdRcvd)
 		{
 			case 1:
+				start(&handler);
 				drive(&handler);
 				quit(&handler);
 				break;
 			case 2:
 				return;
+				start(&handler);
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
 				zigzag(&handler, length, width, numlength);
@@ -144,6 +147,19 @@ int rcvCommand()
 	printf("Enter command : ");
 	scanf("%d", &command);
 	return command;
+}
+
+void start(Handlers *handler)
+{
+	char buf[1];
+
+	sprintf(handler->fdIRobot, "%c", Start);
+	printf("[+] Send msg : %d\n", buf[0]);
+	write(fdIrobot, buf, 1);
+
+	sprintf(handler->fdIRobot, "%c", SafeMode);
+	printf("[+] Send msg : %d\n", buf[0]);
+	write(fdIrobot, buf, 1);
 }
 
 /*
