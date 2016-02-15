@@ -28,7 +28,7 @@ const char		Angle = 20;
 const int		GYRO_PACKET_SIZE = 8; 			// gyro packet size
 const int		IROBOT_PACKET_SIZE = 2;			// irobot packet size
 const float		MM_PER_COUNTER = 0.4446;		// mm travel per counter
-const int		COUNTER_PER_RANGLE = 410;    // counters per 90 angle
+const int		COUNTER_PER_RANGLE = 410;		// counters per 90 angle
 
 // Global variable for system
 struct timeval startTime;
@@ -36,11 +36,11 @@ int SPEED_LEFT =  100;							// slow speed in case of turning
 int SPEED_RIGHT = 100;							// slow speed in case of turning
 int SPEED_LEFT_STRAIGHT = 200;					// fast speed in case of straight
 int SPEED_RIGHT_STRAIGHT = 200;					// fast speed in case of straight
-struct Handlers{
+typedef struct Handlers{								// structure for handlers (pgr, xg, irobot)
 	fc2Context context;
 	int fdGyro;
 	int fdIRobot;
-}											// structure for handlers (pgr, xg, irobot)
+};											
 
 // Global variable for record
 float gyroElapsedTime;
@@ -63,7 +63,7 @@ void drive(Handlers handler);
 void zigzag(Handlers handler, int length, int width, int req_num_length);
 
 void quit(Handlers handler);					// stop OI
-void pause(int fd);					// pause driving
+void pauseDrive(int fd);						// pauseDrive driving
 void forward(int fd);
 void reverse(int fd);
 void left(int fd);
@@ -104,7 +104,7 @@ void main()
 		switch(cmdRcvd)
 		{
 			case 1:
-				drive(fdIRobot);
+				drive(handler.fdIRobot);
 				quit(handler);
 				break;
 			case 2:
@@ -194,7 +194,7 @@ void drive(Handlers handler)
 	            break;
 	        case ' ':
 	        	// code for spacebar
-	        	pause(fd);
+	        	pauseDrive(fd);
 	        	break;
 	        case 0xA: 
 	        	// enter key
@@ -207,18 +207,12 @@ void drive(Handlers handler)
 }
 
 /*
-zigag
-- Make thread for receiveRecord
-- request length / width / # of length
-*/
-
-/*
 real-time driving commands
 - forward
 - reverse
 - left
 - right
-- pause
+- pauseDrive
 */
 
 void forward(int fd) 
@@ -271,6 +265,16 @@ void right(int fd)
 
 	printf("[+] Send msg : (Right)\n");
 	write(fd, buf, 5);
+}
+
+/*
+zigag
+- Make thread for receiveRecord
+- request length / width / # of length
+*/
+void zigzag(Handlers handler, int length, int width, int req_num_length)
+{
+	
 }
 
 /*
