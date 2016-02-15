@@ -432,11 +432,10 @@ void *receiveRecord(void *status)
     // Start Recording
     while(1)
     {
-
-    	printf("[+] Enter retrieveGyro \n");
-    	retrieveGyro();
     	printf("[+] Enter retrieveEncoder \n");
     	retrieveEncoder();
+    	printf("[+] Enter retrieveGyro \n");
+    	retrieveGyro();
    		imageCnt++;
    		pgrImageNumber = imageCnt;
     	printf("[+] Enter retrieveImage \n");
