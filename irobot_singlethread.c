@@ -158,6 +158,8 @@ int rcvCommand()
 void start()
 {
 	char buf[1];
+
+	printf("Start char before. %d\n", Start);
 	
 	buf[0] = (unsigned char)(Start);
 	printf("Start char. %d\n", buf[0]);
