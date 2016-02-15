@@ -295,7 +295,7 @@ void pauseDrive()
 	buf[2] = (char)(0);
 	buf[3] = (char)(0);
 	buf[4] = (char)(0);
-	printf("[+] Send msg :(Pause Driving)\n");
+	printf("[+] Send msg : (Pause Driving)\n");
 	write(fdIRobot, buf, 5);
 }
 
@@ -516,7 +516,7 @@ void retrieveEncoder()
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
 	// flush serial buffer before request
-	tcflush(fdIRobot, TCIFLUSH);
+	//tcflush(fdIRobot, TCIFLUSH);
 
 	buf[0] = (char)(StreamPause);
 	buf[1] = (char)(1);
