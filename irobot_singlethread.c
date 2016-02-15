@@ -541,10 +541,10 @@ void retrieveEncoder()
 		}
 	}
 
-	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
-	write(fd, buf, 2);
-
 	gettimeofday(&encEndTime, NULL);
+
+	sprintf(buf, "%c%c", StreamPause, 0); // pause stream
+	write(fdIRobot, buf, 2);
 
 	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	encLeftCnt = leften;
