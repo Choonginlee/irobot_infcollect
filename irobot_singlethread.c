@@ -160,8 +160,6 @@ void start()
 	
 	char buf[1];
 	
-	printf("Start char before. %d\n", Start);
-	
 	buf[0] = Start;
 	printf("Start char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
@@ -373,7 +371,7 @@ void quit()
 
 	// stop OI
 	sprintf(buf, "%c", Stop);
-	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
+	printf("[+] Send msg : %d (Stop OI) \n", buf[0]);
 	write(fdIRobot, buf, 1);
 
 	// Stop capture
