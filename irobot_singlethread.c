@@ -449,8 +449,6 @@ void *receiveRecord(void *status)
         	gyroElapsedTime, gyroAngleData,				// record gyro data capture
         	encElapsedTime, encLeftCnt, encRightCnt);	// record irobot data capture
         write(fdTxt, writeLine, strlen(writeLine));
-
-        usleep(50 * 1000);
     }
 
 
