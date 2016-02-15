@@ -159,10 +159,10 @@ void start()
 {
 	char buf[1];
 
-	buf[0] = Start
+	buf[0] = Start;
 	write(fdIRobot, buf, 1);
 
-	buf[0] = SafeMode
+	buf[0] = SafeMode;
 	write(fdIRobot, buf, 1);
 }
 
@@ -295,7 +295,7 @@ void pauseDrive()
 	buf[2] = (char)(0);
 	buf[3] = (char)(0);
 	buf[4] = (char)(0);
-	printf("[+] Send msg :(Pause Driving)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
+	printf("[+] Send msg :(Pause Driving)\n");
 	write(fdIRobot, buf, 5);
 }
 
