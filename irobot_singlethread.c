@@ -315,21 +315,21 @@ void quit(Handlers handler)
 	fc2Error error;
 
 	// Stop capture
-    error = fc2StopCapture( context );
+    error = fc2StopCapture( handler.context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2StopCapture: %d\n", error );
     }
 
 	// Disconnect
-    error = fc2Disconnect( context );
+    error = fc2Disconnect( handler.context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2Disconnect: %d\n", error );
     }
 
 	// DestoryContext
-    error = fc2DestroyContext( context );
+    error = fc2DestroyContext( handler.context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2DestroyContext: %d\n", error );
