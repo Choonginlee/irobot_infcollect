@@ -159,22 +159,22 @@ void start()
 {
 	
 	char buf[1];
-	/*
+	
 	printf("Start char before. %d\n", Start);
 	
-	buf[0] = (unsigned char)(Start);
+	buf[0] = Start;
 	printf("Start char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	buf[0] = (unsigned char)(SafeMode);
+	buf[0] = SafeMode;
 	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	buf[0] = (unsigned char)(Clean);
+	buf[0] = Clean;
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
-	*/
-
+	
+	/*
 	sprintf(buf, "%c", Start);
 	write(fdIRobot, buf, 1);
 	printf("Start char. %d\n", buf[0]);
@@ -186,7 +186,7 @@ void start()
 	sprintf(buf, "%c", Clean);
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
-	
+	*/
 	
 }
 
