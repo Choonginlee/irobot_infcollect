@@ -104,7 +104,7 @@ void main()
 		switch(cmdRcvd)
 		{
 			case 1:
-				printf("%d", handler.fdGyro)
+				printf("%d", handler.fdGyro);
 				drive(&handler);
 				quit(&handler);
 				break;
