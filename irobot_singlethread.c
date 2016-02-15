@@ -234,7 +234,6 @@ real-time driving commands
 
 void forward(int fd) 
 {
-	printf("[+] forward : %d\n", fd);
 	char buf[5];
 
 	sprintf(buf, "%c%c%c%c%c",
@@ -406,8 +405,11 @@ void *receiveRecord(void *v_handler)
     // Start Recording
     while(1)
     {
+    	printf("[+] Enter retrieveGyro \n");
     	retrieveGyro(handler);
+    	printf("[+] Enter retrieveEncoder \n");
     	retrieveEncoder(handler);
+    	printf("[+] Enter retrieveImage \n");
     	retrieveImage(handler);
 
 		// Record saved image info
@@ -431,6 +433,8 @@ void retrieveGyro(Handlers *handler)
 	short check_sum;
 	struct timeval gyroEndTime;
 	unsigned char data_packet[GYRO_PACKET_SIZE];
+
+	printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 
 	while(1)
 	{
