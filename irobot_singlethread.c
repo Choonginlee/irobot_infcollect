@@ -13,6 +13,7 @@
 //				Create Command					// Arguments
 const char		Start = 128;
 const char		Stop = 173;
+const char 		Reset = 7;
 const char		SafeMode = 131;
 const char		FullMode = 132;
 const char		Clean = 135;
@@ -69,6 +70,7 @@ void drive();
 void zigzag(int length, int width, int req_num_length);
 
 void start();					// send start and safemode command
+void reset();
 void quit();					// stop OI
 void pauseDrive();						// pauseDrive driving
 void forward();
@@ -126,6 +128,9 @@ void main()
 			case 3:				
 				quit();
 				break;
+			case 4:
+				reset();
+				break;
 			default:
 				printf("[-] Wrong input! Exit. : ");
 				return;
@@ -140,7 +145,8 @@ void showInstruction()
 	printf("=========================================\n");
 	printf("1. Realtime drive 			--> Type 1\n");
 	printf("2. Zigzag 					--> Type 2\n");
-	printf("3. Quit and Clear camera 	--> Type 3\n\n");
+	printf("3. Quit and Clear camera 	--> Type 3\n");
+	printf("4. Reset robot system 		--> Type 4\n\n");
 	printf("[Info] Make sure you clear previous data by pressing 3 after emergency stop.\n");
 	printf("[Info] Please check connection status before start.\n");
 	printf("[Info] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
@@ -186,6 +192,15 @@ void start()
 	write(fdIRobot, buf, 1);
 	*/
 	
+}
+
+void reset()
+{
+	char buf[1];
+
+	buf[0] = Reset;
+	printf("[+] Send msg : %d (Reset robot) \n", buf[0]);
+	write(fdIRobot, buf, 1);
 }
 
 /*
