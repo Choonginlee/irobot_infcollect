@@ -94,7 +94,7 @@ void main()
 	handler.context = setPGR();
 	handler.fdGyro = setGyro();
 	handler.fdIRobot = setIRobot();
-
+	printf("gyro : %d\n", handler.fdGyro);
 	showInstruction();
 
 	while(1)
@@ -115,7 +115,6 @@ void main()
 				quit(&handler);
 				break;
 			case 3:				
-				printf("gyro : %d\n", handler.fdGyro);
 				quit(&handler);
 				break;
 			default:
@@ -328,7 +327,6 @@ quit
 void quit(Handlers *handler)
 {
 	fc2Error error;
-	printf("gyro2 : %d\n", handler->fdGyro);
 	// Stop capture
     error = fc2StopCapture( handler->context );
     if ( error != FC2_ERROR_OK )
