@@ -374,7 +374,7 @@ void quit()
 	// stop OI
 	sprintf(buf, "%c", Stop);
 	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
-	write(fd, buf, 1);
+	write(fdIRobot, buf, 1);
 
 	// Stop capture
     error = fc2StopCapture( context );
