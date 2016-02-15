@@ -387,9 +387,11 @@ receiveRecord
 */
 void *receiveRecord(void *status)
 {
+	fc2Error error;
     char filePath[10];
     char writeLine[100];
     int fdTxt; // file descriptor for writing file
+    int imageCnt = 0;
 
     // base time set
     gettimeofday(&startTime, NULL);
@@ -405,15 +407,41 @@ void *receiveRecord(void *status)
     sprintf(writeLine, "TimeImg\tImage #\tTimeGyro\tdegree\tTimeEnc\tleftEnc\trightEnc\n");
     write(fdTxt, writeLine, strlen(writeLine));
 
+    error = fc2StartCapture( context );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "[-] Error in fc2StartCapture: %d\n", error );
+
+    	// Disconnect
+	    error = fc2Disconnect( context );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "[-] Error in fc2Disconnect: %d\n", error );
+	    }
+
+		// DestoryContext
+	    error = fc2DestroyContext( context );
+	    if ( error != FC2_ERROR_OK )
+	    {
+	        printf( "[-] Error in fc2DestroyContext: %d\n", error );
+	    }
+
+        exit(0);
+    }
+
     // Start Recording
     while(1)
     {
+
     	printf("[+] Enter retrieveGyro \n");
     	retrieveGyro();
     	printf("[+] Enter retrieveEncoder \n");
     	retrieveEncoder();
+   		imageCnt++;
+   		pgrImageNumber = imageCnt;
     	printf("[+] Enter retrieveImage \n");
     	retrieveImage();
+
 
 		// Record saved image info
         sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
@@ -522,30 +550,6 @@ void retrieveImage()
     fc2Image convertedImage;
 	struct timeval pgrEndTime;
 
-    int imageCnt = 0;
-
-    error = fc2StartCapture( context );
-    if ( error != FC2_ERROR_OK )
-    {
-        printf( "[-] Error in fc2StartCapture: %d\n", error );
-
-    	// Disconnect
-	    error = fc2Disconnect( context );
-	    if ( error != FC2_ERROR_OK )
-	    {
-	        printf( "[-] Error in fc2Disconnect: %d\n", error );
-	    }
-
-		// DestoryContext
-	    error = fc2DestroyContext( context );
-	    if ( error != FC2_ERROR_OK )
-	    {
-	        printf( "[-] Error in fc2DestroyContext: %d\n", error );
-	    }
-
-        exit(0);
-    }
-
 	error = fc2CreateImage( &rawImage );
     if ( error != FC2_ERROR_OK )
     {
@@ -579,15 +583,14 @@ void retrieveImage()
             printf( "[-] Error in fc2ConvertImageTo: %d\n", error );
         	quit();
         }
-        imageCnt++;
 
         // Save it to jpeg
-        sprintf(filePath, "./result/%d.jpeg", imageCnt);
+        sprintf(filePath, "./result/%d.jpeg", pgrImageNumber);
 
 		error = fc2SaveImage( &convertedImage, filePath, FC2_JPEG );
 		if ( error != FC2_ERROR_OK )
 		{
-			printf( "[-] Error in saving image %d.jpeg: %d\n", imageCnt, error );
+			printf( "[-] Error in saving image %d.jpeg: %d\n", pgrImageNumber, error );
 			printf( "[-] Please check write permissions.\n");
         	quit();
 		}
