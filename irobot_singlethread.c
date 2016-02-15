@@ -108,7 +108,7 @@ void main()
 
 		switch(cmdRcvd)
 		{
-			case:
+			case 1:
 				start();
 				drive();
 				quit();
@@ -180,7 +180,7 @@ void drive()
 
 	char dir;
 
-	thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)status);
+	thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)&status);
 	if(thr_id < 0)
 	{
 		perror("[-] Thread create error : ");
