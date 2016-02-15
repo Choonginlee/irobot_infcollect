@@ -611,7 +611,6 @@ void retrieveImage()
     }
 
     pgrElapsedTime = ((double)(pgrEndTime.tv_sec)+(double)(pgrEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
-    pgrImageNumber = imageCnt;
     //fc2TimeStamp ts = fc2GetImageTimeStamp( &rawImage );
 }
 
