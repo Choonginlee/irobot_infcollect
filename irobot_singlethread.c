@@ -36,7 +36,7 @@ int SPEED_LEFT =  100;							// slow speed in case of turning
 int SPEED_RIGHT = 100;							// slow speed in case of turning
 int SPEED_LEFT_STRAIGHT = 200;					// fast speed in case of straight
 int SPEED_RIGHT_STRAIGHT = 200;					// fast speed in case of straight
-typedef struct Handlers{								// structure for handlers (pgr, xg, irobot)
+struct Handlers{								// structure for handlers (pgr, xg, irobot)
 	fc2Context context;
 	int fdGyro;
 	int fdIRobot;
@@ -274,7 +274,7 @@ zigag
 */
 void zigzag(Handlers handler, int length, int width, int req_num_length)
 {
-	
+
 }
 
 /*
