@@ -173,14 +173,14 @@ void start()
 	*/
 	sprintf(buf, "%c", Start);
 	write(fdIRobot, buf, 1);
-	printf("Start char. %c\n", buf[0]);
+	printf("Start char. %d\n", buf[0]);
 
 	sprintf(buf, "%c", SafeMode);
-	printf("SafeMode char. %c\n", buf[0]);
+	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
 	sprintf(buf, "%c", Clean);
-	printf("Clean char. %c\n", buf[0]);
+	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	
 }
@@ -535,7 +535,7 @@ void retrieveEncoder()
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
 	// flush serial buffer before request
-	tcflush(fdIRobot, TCIFLUSH);
+	//tcflush(fdIRobot, TCIFLUSH);
 
 	buf[0] = (char)(StreamPause);
 	buf[1] = (char)(1);
