@@ -159,15 +159,15 @@ void start()
 {
 	char buf[1];
 	
-	buf[0] = (char)(Start);
+	buf[0] = Start;
 	printf("Start char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	buf[0] = (char)(SafeMode);
+	buf[0] = SafeMode;
 	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	buf[0] = (char)(Clean);
+	buf[0] = Clean;
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	/*
