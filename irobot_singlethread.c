@@ -19,6 +19,7 @@ const char		Clean = 135;
 const char		DriveDirect = 145;				// 4:   [Right Hi] [Right Low] [Left Hi] [Left Low]
 const char		Sensors = 142;					// 1:    Sensor Packet ID
 const char		SensorStream = 148;         // x+1: [# of packets requested] IDs of requested packets to stream
+const char		StreamPause = 150;
 
 //				iRobot Create 2 Packet IDs		//
 const char		LeftEncoderCounts = 43;
@@ -519,7 +520,7 @@ void retrieveEncoder()
 		// The data received should be 9 bytes
 		// [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
 		// [19][6][43][xxxx][44][xxxx][xxx]
-		if(IROBOT_PACKET_SIZE != read(fd, data_packet, IROBOT_PACKET_SIZE))
+		if(IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE))
 		{
 			//printf("Not valid packet size\n");
 			continue;
