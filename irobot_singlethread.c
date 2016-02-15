@@ -18,6 +18,7 @@ const char		FullMode = 132;
 const char		Clean = 135;
 const char		DriveDirect = 145;				// 4:   [Right Hi] [Right Low] [Left Hi] [Left Low]
 const char		Sensors = 142;					// 1:    Sensor Packet ID
+const char		QueryList = 149;
 
 //				iRobot Create 2 Packet IDs		//
 const char		LeftEncoderCounts = 43;
@@ -502,15 +503,16 @@ void retrieveGyro()
 
 void retrieveEncoder()
 {
-	char buf[2];
+	char buf[7];
 	unsigned short leften;
 	unsigned short righten;
 	struct timeval encEndTime;
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
 	// request censor stream for two bytes (LeftCnt)
-	sprintf(buf, "%c%c", Sensors, LeftEncoderCounts);
-	write(fdIRobot, buf, 2);
+	sprintf(buf, "%c%c%c%c%c%c%c", QueryList, 5,
+		LeftEncoderCounts, LeftEncoderCounts, LeftEncoderCounts, LeftEncoderCounts, LeftEncoderCounts);
+	write(fdIRobot, buf, 7);
 	while(1)
 	{
 		if( IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
@@ -521,8 +523,9 @@ void retrieveEncoder()
 	}
 
 	// request censor stream for two bytes (RightCnt)
-	sprintf(buf, "%c%c", Sensors, RightEncoderCounts);
-	write(fdIRobot, buf, 2);
+	sprintf(buf, "%c%c%c%c%c%c%c", QueryList, 5,
+		RightEncoderCounts, RightEncoderCounts, RightEncoderCounts, RightEncoderCounts, RightEncoderCounts);
+	write(fdIRobot, buf, 7);
 	while(1)
 	{
 		if( IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
