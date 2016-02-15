@@ -36,11 +36,15 @@ int SPEED_LEFT =  100;							// slow speed in case of turning
 int SPEED_RIGHT = 100;							// slow speed in case of turning
 int SPEED_LEFT_STRAIGHT = 200;					// fast speed in case of straight
 int SPEED_RIGHT_STRAIGHT = 200;					// fast speed in case of straight
-typedef struct {								// structure for handlers (pgr, xg, irobot)
+/*typedef struct {								// structure for handlers (pgr, xg, irobot)
 	fc2Context context;
 	int fdGyro;
 	int fdIRobot;
-}Handlers;									
+}Handlers;		*/
+
+fc2Context context;
+int fdGyro;
+int fdIRobot;							
 
 // Global variable for record
 float gyroElapsedTime;
@@ -59,25 +63,25 @@ int setGyro();
 int setIRobot();
 //void SetTimeStamping( fc2Context context, BOOL enableTimeStamp );
 
-void drive(Handlers *handler);
-void zigzag(Handlers *handler, int length, int width, int req_num_length);
+void drive();
+void zigzag(int length, int width, int req_num_length);
 
-void start(Handlers *handler);					// send start and safemode command
-void quit(Handlers *handler);					// stop OI
-void pauseDrive(int fd);						// pauseDrive driving
-void forward(int fd);
-void reverse(int fd);
-void left(int fd);
-void right(int fd);
-void forwardDistance(int fd, int distance);
-void reverseDistance(int fd, int distance);
-void leftAngle(int fd, int angle);
-void rightAngle(int fd, int angle);
+void start();					// send start and safemode command
+void quit();					// stop OI
+void pauseDrive();						// pauseDrive driving
+void forward();
+void reverse();
+void left();
+void right();
+void forwardDistance(int distance);
+void reverseDistance(int distance);
+void leftAngle(int angle);
+void rightAngle(int angle);
 
-void *receiveRecord(void *v_handler);
-void retrieveGyro(Handlers *handler);
-void retrieveEncoder(Handlers *handler);
-void retrieveImage(Handlers *handler);
+void *receiveRecord(void *status);
+void retrieveGyro();
+void retrieveEncoder();
+void retrieveImage();
 
 /* 
 main
@@ -91,11 +95,11 @@ void main()
 	int width;
 	int numlength;
 
-	Handlers handler;
-	handler.context = setPGR();
-	handler.fdGyro = setGyro();
-	handler.fdIRobot = setIRobot();
-	printf("[+] gyro : %d irobot : %d\n", handler.fdGyro, handler.fdIRobot);
+	//Handlers handler;
+	context = setPGR();
+	fdGyro = setGyro();
+	fdIRobot = setIRobot();
+	//printf("[+] gyro : %d irobot : %d\n", handler.fdGyro, handler.fdIRobot);
 	showInstruction();
 
 	while(1)
@@ -104,21 +108,21 @@ void main()
 
 		switch(cmdRcvd)
 		{
-			case 1:
-				start(&handler);
-				drive(&handler);
-				quit(&handler);
+			case:
+				start();
+				drive();
+				quit();
 				break;
 			case 2:
 				return;
-				start(&handler);
+				start();
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
-				zigzag(&handler, length, width, numlength);
-				quit(&handler);
+				zigzag(length, width, numlength);
+				quit();
 				break;
 			case 3:				
-				quit(&handler);
+				quit();
 				break;
 			default:
 				printf("[-] Wrong input! Exit. : ");
@@ -149,17 +153,17 @@ int rcvCommand()
 	return command;
 }
 
-void start(Handlers *handler)
+void start()
 {
 	char buf[1];
 
 	sprintf(buf, "%c", Start);
 	printf("[+] Send msg : %d\n", buf[0]);
-	write(handler->fdIRobot, buf, 1);
+	write(fdIRobot, buf, 1);
 
 	sprintf(buf, "%c", SafeMode);
 	printf("[+] Send msg : %d\n", buf[0]);
-	write(handler->fdIRobot, buf, 1);
+	write(fdIRobot, buf, 1);
 }
 
 /*
@@ -167,16 +171,16 @@ drive
 - Make thread for receiveRecord
 - handle real-time key input
 */
-void drive(Handlers *handler)
+void drive()
 {
-	printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
+	//printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 	pthread_t p_thread;
 	int thr_id;
 	int status;
 
 	char dir;
 
-	thr_id = pthread_create(&p_thread, NULL, receiveRecord, &handler);
+	thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)status);
 	if(thr_id < 0)
 	{
 		perror("[-] Thread create error : ");
@@ -195,23 +199,23 @@ void drive(Handlers *handler)
 	    switch(dir) { // the real value
 	        case 'A':
 	            // code for arrow up
-	        	forward(handler->fdIRobot);
+	        	forward();
 	            break;
 	        case 'B':
 	            // code for arrow down
-	        	reverse(handler->fdIRobot);
+	        	reverse();
 	            break;
 	        case 'C':
 	            // code for arrow right
-	        	right(handler->fdIRobot);
+	        	right();
 	            break;
 	        case 'D':
 	            // code for arrow left
-	        	left(handler->fdIRobot);
+	        	left();
 	            break;
 	        case ' ':
 	        	// code for spacebar
-	        	pauseDrive(handler->fdIRobot);
+	        	pauseDrive();
 	        	break;
 	        case 0xA: 
 	        	// enter key
@@ -232,7 +236,7 @@ real-time driving commands
 - pauseDrive
 */
 
-void forward(int fd) 
+void forward() 
 {
 	char buf[5];
 
@@ -242,10 +246,10 @@ void forward(int fd)
 		(char)((SPEED_LEFT_STRAIGHT>>8)&0xFF), (char)(SPEED_LEFT_STRAIGHT&0xFF));
 
 	printf("[+] Send msg : (Forward straight)\n");
-	write(fd, buf, 5);
+	write(fdIRobot, buf, 5);
 }
 
-void reverse(int fd) 
+void reverse() 
 {
 	char buf[5];
 
@@ -255,10 +259,10 @@ void reverse(int fd)
 			(char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF), (char)((-SPEED_LEFT_STRAIGHT)&0xFF));
 
 	printf("[+] Send msg : (Backward straight)\n");
-	write(fd, buf, 5);
+	write(fdIRobot, buf, 5);
 }
 
-void left(int fd)
+void left()
 {
 	char buf[5];
 
@@ -268,10 +272,10 @@ void left(int fd)
 		(char)(((-SPEED_LEFT)>>8)&0xFF), (char)((-SPEED_LEFT)&0xFF));
 
 	printf("[+] Send msg : (Left)\n");
-	write(fd, buf, 5);
+	write(fdIRobot, buf, 5);
 }
 
-void right(int fd)
+void right()
 {
 	char buf[5];
 
@@ -281,10 +285,10 @@ void right(int fd)
 			(char)((SPEED_LEFT>>8)&0xFF), (char)(SPEED_LEFT&0xFF));
 
 	printf("[+] Send msg : (Right)\n");
-	write(fd, buf, 5);
+	write(fdIRobot, buf, 5);
 }
 
-void pauseDrive(int fd)
+void pauseDrive()
 {
 	char buf[5];
 
@@ -295,7 +299,7 @@ void pauseDrive(int fd)
 
 	printf("[+] Send msg : %d%d%d%d%d (Pause Driving)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
 
-	write(fd, buf, 5);
+	write(fdIRobot, buf, 5);
 }
 
 /*
@@ -303,7 +307,7 @@ zigag
 - Make thread for receiveRecord
 - request length / width / # of length
 */
-void zigzag(Handlers *handler, int length, int width, int req_num_length)
+void zigzag(int length, int width, int req_num_length)
 {
 
 }
@@ -316,22 +320,22 @@ designated driving commands
 - rightAngle
 */
 
-void forwardDistance(int fd, int distance)
+void forwardDistance(int distance)
 {
 
 }
 
-void reverseDistance(int fd, int distance)
+void reverseDistance(int distance)
 {
 
 }
 
-void leftAngle(int fd, int angle)
+void leftAngle(int angle)
 {
 
 }
 
-void rightAngle(int fd, int angle)
+void rightAngle(int angle)
 {
 
 }
@@ -341,25 +345,25 @@ quit
 - stop pgr capturing
 - exit
 */
-void quit(Handlers *handler)
+void quit()
 {
 	fc2Error error;
 	// Stop capture
-    error = fc2StopCapture( handler->context );
+    error = fc2StopCapture( context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2StopCapture: %d\n", error );
     }
 
 	// Disconnect
-    error = fc2Disconnect( handler->context );
+    error = fc2Disconnect( context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2Disconnect: %d\n", error );
     }
 
 	// DestoryContext
-    error = fc2DestroyContext( handler->context );
+    error = fc2DestroyContext( context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2DestroyContext: %d\n", error );
@@ -381,9 +385,8 @@ receiveRecord
 - Record [1-3]
 - Retrieval method records data on global variable
 */
-void *receiveRecord(void *v_handler)
+void *receiveRecord(void *status)
 {
-	Handlers *handler = (Handlers *)v_handler;
     char filePath[10];
     char writeLine[100];
     int fdTxt; // file descriptor for writing file
@@ -406,11 +409,11 @@ void *receiveRecord(void *v_handler)
     while(1)
     {
     	printf("[+] Enter retrieveGyro \n");
-    	retrieveGyro(handler);
+    	retrieveGyro();
     	printf("[+] Enter retrieveEncoder \n");
-    	retrieveEncoder(handler);
+    	retrieveEncoder();
     	printf("[+] Enter retrieveImage \n");
-    	retrieveImage(handler);
+    	retrieveImage();
 
 		// Record saved image info
         sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
@@ -423,7 +426,7 @@ void *receiveRecord(void *v_handler)
 
 }
 
-void retrieveGyro(Handlers *handler)
+void retrieveGyro()
 {
 	short header;
 	short rate_int;
@@ -434,11 +437,11 @@ void retrieveGyro(Handlers *handler)
 	struct timeval gyroEndTime;
 	unsigned char data_packet[GYRO_PACKET_SIZE];
 
-	printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
+	//printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 
 	while(1)
 	{
-		if(GYRO_PACKET_SIZE != read(handler->fdGyro, data_packet, GYRO_PACKET_SIZE))
+		if(GYRO_PACKET_SIZE != read(fdGyro, data_packet, GYRO_PACKET_SIZE))
 		{
 			continue;
 		}
@@ -470,7 +473,7 @@ void retrieveGyro(Handlers *handler)
 	}
 }
 
-void retrieveEncoder(Handlers *handler)
+void retrieveEncoder()
 {
 	char buf[2];
 	unsigned short leften;
@@ -480,10 +483,10 @@ void retrieveEncoder(Handlers *handler)
 
 	// request censor stream for two bytes (LeftCnt)
 	sprintf(buf, "%c%c", Sensors, LeftEncoderCounts);
-	write(handler->fdIRobot, buf, 2);
+	write(fdIRobot, buf, 2);
 	while(1)
 	{
-		if( IROBOT_PACKET_SIZE != read(handler->fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
+		if( IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
 			continue;
 
 		leften = (data_packet[0] << 8) | data_packet[1];
@@ -492,10 +495,10 @@ void retrieveEncoder(Handlers *handler)
 
 	// request censor stream for two bytes (RightCnt)
 	sprintf(buf, "%c%c", Sensors, RightEncoderCounts);
-	write(handler->fdIRobot, buf, 2);
+	write(fdIRobot, buf, 2);
 	while(1)
 	{
-		if( IROBOT_PACKET_SIZE != read(handler->fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
+		if( IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE) )
 			continue;
 
 		righten = (data_packet[0] << 8) | data_packet[1];
@@ -511,7 +514,7 @@ void retrieveEncoder(Handlers *handler)
 	return;
 }
 
-void retrieveImage(Handlers *handler)
+void retrieveImage()
 {
 	char filePath[10];
 	fc2Error error;
@@ -521,20 +524,20 @@ void retrieveImage(Handlers *handler)
 
     int imageCnt = 0;
 
-    error = fc2StartCapture( handler->context );
+    error = fc2StartCapture( context );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2StartCapture: %d\n", error );
 
     	// Disconnect
-	    error = fc2Disconnect( handler->context );
+	    error = fc2Disconnect( context );
 	    if ( error != FC2_ERROR_OK )
 	    {
 	        printf( "[-] Error in fc2Disconnect: %d\n", error );
 	    }
 
 		// DestoryContext
-	    error = fc2DestroyContext( handler->context );
+	    error = fc2DestroyContext( context );
 	    if ( error != FC2_ERROR_OK )
 	    {
 	        printf( "[-] Error in fc2DestroyContext: %d\n", error );
@@ -547,24 +550,24 @@ void retrieveImage(Handlers *handler)
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2CreateImage: %d\n", error );
-        quit(handler);
+        quit();
     }
 
     error = fc2CreateImage( &convertedImage );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2CreateImage: %d\n", error );
-        quit(handler);
+        quit();
     }
 
 	gettimeofday(&pgrEndTime, NULL);
 	
     // Retrieve the image
-    error = fc2RetrieveBuffer( handler->context, &rawImage );
+    error = fc2RetrieveBuffer( context, &rawImage );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in retrieveBuffer: %d\n", error);
-        quit(handler);
+        quit();
     }
 
     else if ( error == FC2_ERROR_OK )
@@ -574,7 +577,7 @@ void retrieveImage(Handlers *handler)
         if ( error != FC2_ERROR_OK )
         {
             printf( "[-] Error in fc2ConvertImageTo: %d\n", error );
-        	quit(handler);
+        	quit();
         }
         imageCnt++;
 
@@ -586,7 +589,7 @@ void retrieveImage(Handlers *handler)
 		{
 			printf( "[-] Error in saving image %d.jpeg: %d\n", imageCnt, error );
 			printf( "[-] Please check write permissions.\n");
-        	quit(handler);
+        	quit();
 		}
     }
 
@@ -594,14 +597,14 @@ void retrieveImage(Handlers *handler)
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2DestroyImage: %d\n", error );
-        quit(handler);
+        quit();
     }
 
     error = fc2DestroyImage( &convertedImage );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2DestroyImage: %d\n", error );
-        quit(handler);
+        quit();
     }
 
     pgrElapsedTime = ((double)(pgrEndTime.tv_sec)+(double)(pgrEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
