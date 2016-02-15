@@ -390,6 +390,7 @@ receiveRecord
 void *receiveRecord(void *status)
 {
 	fc2Error error;
+	char buf[4];
     char filePath[10];
     char writeLine[100];
     int fdTxt; // file descriptor for writing file
@@ -430,6 +431,10 @@ void *receiveRecord(void *status)
 
         exit(0);
     }
+
+	// request censor stream for two bytes (LeftCnt / RightCnt)
+	sprintf(buf, "%c%c%c%c", SensorStream, 2, LeftEncoderCounts, RightEncoderCounts);
+	write(fdIRobot, buf, 4);
 
     // Start Recording
     while(1)
@@ -509,9 +514,8 @@ void retrieveEncoder()
 	struct timeval encEndTime;
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
-	// request censor stream for two bytes (LeftCnt / RightCnt)
-	sprintf(buf, "%c%c%c%c", SensorStream, 2, LeftEncoderCounts, RightEncoderCounts);
-	write(fdIRobot, buf, 4);
+	sprintf(buf, "%c%c", StreamPause, 1); // resume stream
+	write(fdIRobot, buf, 2);
 
 	while(1)
 	{
