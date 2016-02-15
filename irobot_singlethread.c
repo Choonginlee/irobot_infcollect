@@ -493,7 +493,7 @@ void retrieveGyro()
 	unsigned char data_packet[GYRO_PACKET_SIZE];
 
 	// flush serial buffer before request
-	tcflush(fdGyro, TCIFLUSH);
+	//tcflush(fdGyro, TCIFLUSH);
 
 	//printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 
