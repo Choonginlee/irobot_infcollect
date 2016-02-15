@@ -101,7 +101,7 @@ void main()
 	context = setPGR();
 	fdGyro = setGyro();
 	fdIRobot = setIRobot();
-	//printf("[+] gyro : %d irobot : %d\n", handler.fdGyro, handler.fdIRobot);
+	printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
 	showInstruction();
 
 	while(1)
@@ -173,7 +173,7 @@ drive
 */
 void drive()
 {
-	//printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
+	printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
 	pthread_t p_thread;
 	int thr_id;
 	int status;
@@ -516,7 +516,7 @@ void retrieveEncoder()
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
 	// flush serial buffer before request
-	//tcflush(fdIRobot, TCIFLUSH);
+	tcflush(fdIRobot, TCIFLUSH);
 
 	buf[0] = (char)(StreamPause);
 	buf[1] = (char)(1);
