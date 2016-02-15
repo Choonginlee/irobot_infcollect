@@ -376,7 +376,7 @@ void clean()
 {
 	char buf[1];
 
-	buf[0] = Clean
+	buf[0] = Clean;
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 }
