@@ -153,13 +153,13 @@ void start(Handlers *handler)
 {
 	char buf[1];
 
-	sprintf(handler->fdIRobot, "%c", Start);
+	sprintf(buf, "%c", Start);
 	printf("[+] Send msg : %d\n", buf[0]);
-	write(fdIrobot, buf, 1);
+	write(Handler->fdIRobot, buf, 1);
 
-	sprintf(handler->fdIRobot, "%c", SafeMode);
+	sprintf(buf, "%c", SafeMode);
 	printf("[+] Send msg : %d\n", buf[0]);
-	write(fdIrobot, buf, 1);
+	write(Handler->fdIRobot, buf, 1);
 }
 
 /*
