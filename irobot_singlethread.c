@@ -90,7 +90,7 @@ void main()
 	int width;
 	int numlength;
 
-	struct Handlers handler;
+	Handlers handler;
 	handler.context = setPGR();
 	handler.fdGyro = setGyro();
 	handler.fdIRobot = setIRobot();
@@ -111,7 +111,7 @@ void main()
 				return;
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
-				zigzag(fdIRobot, length, width, numlength);
+				zigzag(handler.fdIRobot, length, width, numlength);
 				quit(handler);
 				break;
 			case 3:
