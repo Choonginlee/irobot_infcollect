@@ -158,7 +158,7 @@ int rcvCommand()
 void start()
 {
 	
-	unsigned char buf[1];
+	char buf[1];
 	/*
 	printf("Start char before. %d\n", Start);
 	
@@ -174,18 +174,16 @@ void start()
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	*/
-	printf("LeftEncoderCounts. %d\n", LeftEncoderCounts);
-	printf("LeftEncoderCounts. %u\n", LeftEncoderCounts);
 
-	sprintf(buf, "%c", (unsigned char)Start);
+	sprintf(buf, "%c", Start);
 	write(fdIRobot, buf, 1);
 	printf("Start char. %d\n", buf[0]);
 
-	sprintf(buf, "%c", (unsigned char)SafeMode);
+	sprintf(buf, "%c", SafeMode);
 	printf("SafeMode char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	sprintf(buf, "%c", (unsigned char)Clean);
+	sprintf(buf, "%c", Clean);
 	printf("Clean char. %d\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	
@@ -371,6 +369,13 @@ quit
 void quit()
 {
 	fc2Error error;
+	char buf[2];
+
+	// stop OI
+	sprintf(buf, "%c", Stop);
+	printf("[+] Send msg : %d\n (Stop OI)", buf[0]);
+	write(fd, buf, 1);
+
 	// Stop capture
     error = fc2StopCapture( context );
     if ( error != FC2_ERROR_OK )
@@ -420,6 +425,8 @@ void *receiveRecord(void *status)
     // base time set
     gettimeofday(&startTime, NULL);
     //SetTimeStamping( context, TRUE );
+
+    printf("[+] Start Recording..\n");
 
     // ready for writing 
     fdTxt = open("./result/result.txt", O_WRONLY | O_CREAT, 0644);
