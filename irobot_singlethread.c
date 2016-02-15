@@ -94,7 +94,7 @@ void main()
 	handler.context = setPGR();
 	handler.fdGyro = setGyro();
 	handler.fdIRobot = setIRobot();
-	printf("gyro : %d\n", handler.fdGyro);
+	printf("gyro : %d irobot : %d\n", handler.fdGyro, handler.fdIRobot);
 	showInstruction();
 
 	while(1)
@@ -153,6 +153,7 @@ drive
 */
 void drive(Handlers *handler)
 {
+	printf("gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 	pthread_t p_thread;
 	int thr_id;
 	int status;
@@ -217,6 +218,7 @@ real-time driving commands
 
 void forward(int fd) 
 {
+	printf("forward : %d\n", fd);
 	char buf[5];
 
 	sprintf(buf, "%c%c%c%c%c",
