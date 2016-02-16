@@ -431,11 +431,13 @@ void quit()
 	close(fdGyro);
 	printf("[+] Serial working clear..\n");
 
+	/*
 	rc = pthread_join(p_thread, (void **)&status);
 	if(rc == 0)
 	{
 		printf("[+] Recording thread clear..\n");
 	}
+	*/
 
 	printf("=====   GOOD BYE   =====\n");
 
