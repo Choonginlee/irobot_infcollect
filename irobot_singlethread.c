@@ -601,6 +601,8 @@ void retrieveEncoder()
 	
 	//usleep( 15 * 1000 );
 
+	memset (&data_packet, '\0', sizeof(data_packet));
+
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
 	write(fdIRobot, buf, 2);
@@ -619,6 +621,7 @@ void retrieveEncoder()
 	}
 
 	//usleep( 15 * 1000 );
+	memset (&data_packet, '\0', sizeof(data_packet));
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
