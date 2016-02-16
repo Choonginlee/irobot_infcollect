@@ -44,6 +44,9 @@ int SPEED_RIGHT_STRAIGHT = 200;					// fast speed in case of straight
 	int fdGyro;
 	int fdIRobot;
 }Handlers;		*/
+pthread_t p_thread;
+int thr_id;
+int status;
 
 fc2Context context;
 int fdGyro;
@@ -200,10 +203,6 @@ drive
 void drive()
 {
 	printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
-	pthread_t p_thread;
-	int thr_id;
-	int status;
-
 	char dir;
 
 	thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)&status);
@@ -380,6 +379,7 @@ quit
 void quit()
 {
 	fc2Error error;
+	int rc;
 	char buf[2];
 
 	// stop drive
@@ -425,6 +425,11 @@ void quit()
 	close(fdGyro);
 	printf("[+] Serial working clear..\n");
 
+	rc = pthread_join(p_thread, (void **)&status);
+	if(rc == 0)
+	{
+		printf("[+] Recording thread clear..\n")	
+	}
 
 	printf("=====   GOOD BYE   =====\n");
 
