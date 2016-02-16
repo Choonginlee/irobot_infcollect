@@ -178,6 +178,8 @@ void singleData(int fd)
 
 		printf("[V] data : [%x%x] ", data_packet[0], data_packet[1]);
 
+		usleep( 100 * 1000 );
+		
 		buf[1] = RightEncoderCounts;
 		write(fd, buf, 2);
 		printf("Sent %d request of right encoder\n", cnt);
