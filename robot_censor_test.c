@@ -129,7 +129,7 @@ void streamData(int fd)
 		printf("[V] data : [%x] [%x%x] [%x%x%x] [%x%x%x]\n", 
 			data_packet[0], data_packet[1], data_packet[2],
 			data_packet[3], data_packet[4], data_packet[5],
-			data_packet[6], data_packet[7], data_packet[8])
+			data_packet[6], data_packet[7], data_packet[8]);
 
 		// 9 bytes detected. check header and bytes
 		if(data_packet[0] == 19 && data_packet[1] == 6)
