@@ -608,9 +608,7 @@ void retrieveEncoder()
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
-
-	usleep( 10 * 1000 );
-
+	
 	while(1)
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
