@@ -887,8 +887,8 @@ int setIRobot()
 	serialio.c_iflag = 0;         // no parity bit
 	serialio.c_oflag = 0;
 	serialio.c_lflag = 0;
-	serialio.c_cc[VTIME] = 1; 
-	serialio.c_cc[VMIN] = 5; 
+	serialio.c_cc[VTIME] = 0; 
+	serialio.c_cc[VMIN] = 2; 
 
 	cfmakeraw(&serialio);
 
