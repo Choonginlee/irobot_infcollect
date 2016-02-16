@@ -622,23 +622,26 @@ void retrieveEncoder()
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encLEndTime, NULL);
-		break;
-	}
-	encdiff = leftenPrev - leften;
 
-	//Quality assuarance
-	if(leftenPrev != 0)
-	{
-		// except rollover
-		if(encdiff > -65000 && encdiff < 65000)
+		encdiff = leftenPrev - leften;
+
+		//Quality assuarance
+		if(leftenPrev != 0)
 		{
-			// strange value happens retrieve again.
-			if(encdiff > 200 | encdiff < -200)
+			// except rollover
+			if(encdiff > -65000 && encdiff < 65000)
 			{
-				continue;
-			}
+				// strange value happens retrieve again.
+				if(encdiff > 200 | encdiff < -200)
+				{
+					write(fdIRobot, buf, 2);
+					continue;
+				}
 
+			}
 		}
+
+		break;
 	}
 
 	leftenPrev = leften;
@@ -661,24 +664,25 @@ void retrieveEncoder()
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encREndTime, NULL);
-		break;
-	}
 
-	encdiff = rightenPrev - righten;
+		encdiff = rightenPrev - righten;
 
-	//Quality assuarance
-	if(rightenPrev != 0)
-	{
-		// except rollover
-		if(encdiff > -65000 && encdiff < 65000)
+		//Quality assuarance
+		if(rightenPrev != 0)
 		{
-			// strange value happens retrieve again.
-			if(encdiff > 200 | encdiff < -200)
+			// except rollover
+			if(encdiff > -65000 && encdiff < 65000)
 			{
-				continue;
-			}
+				// strange value happens retrieve again.
+				if(encdiff > 200 | encdiff < -200)
+				{
+					continue;
+				}
 
+			}
 		}
+
+		break;
 	}
 
 	rightenPrev = righten;
