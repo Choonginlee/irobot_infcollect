@@ -472,10 +472,7 @@ void *receiveRecord(void *status)
 		perror("./result/pgr.txt");
 		exit(0);
 	}
-    sprintf(writeLine, "TimeImg\tImage #\t
-    	TimeGyro\tdegree\t
-    	TimeLnc\tleftEnc\t
-    	TimeREnc\trightEnc\n");
+    sprintf(writeLine, "TimeImg\tImage #\tTimeGyro\tdegree\tTimeLnc\tleftEnc\tTimeREnc\trightEnc\n");
     write(fdTxt, writeLine, strlen(writeLine));
 
     error = fc2StartCapture( context );
@@ -532,17 +529,13 @@ void *receiveRecord(void *status)
 
 		// Record saved image info
         sprintf(writeLine, 
-        	"%.4f, %d, 
-        	%.4f, %d, 
-        	%.4f, %u, 
-        	%.4f, %u\n", 
+        	"%.4f, %d, %.4f, %d, %.4f, %u, %.4f, %u\n", 
         	pgrElapsedTime, pgrImageNumber,				// record pgr data capture
         	gyroElapsedTime, gyroAngleData,				// record gyro data capture
         	encLElapsedTime, encLeftCnt, 				// record irobot data capture
         	encRElapsedTime, encRightCnt);				// record irobot data capture
         write(fdTxt, writeLine, strlen(writeLine));
     }
-
 
 }
 
