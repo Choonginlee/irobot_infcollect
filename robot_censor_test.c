@@ -1,10 +1,12 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <time.h>
 
 const char		Start = 128;
+const char		SafeMode = 131;
 const char		Stop = 173;
 const char		Sensors = 142;					// 1:    Sensor Packet ID
 const char		SensorStream = 148;         // x+1: [# of packets requested] IDs of requested packets to stream
@@ -31,7 +33,7 @@ void main()
 
 	printf("1. Start 2. Stream 3. Single 4. Exit n pause\n");
 	printf("Cmd : ");
-	scanf("%d", n);
+	scanf("%d", &n);
 
 	switch(n)
 	{
