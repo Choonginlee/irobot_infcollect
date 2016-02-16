@@ -18,6 +18,7 @@ const char		LeftEncoderCounts = 43;
 const char		RightEncoderCounts = 44;
 
 const int		IROBOT_PACKET_SIZE_STREAM = 9;	// irobot packet size
+const int		IROBOT_PACKET_SIZE_SENSORS = 2;	// irobot packet size
 
 
 void start(int fd);
@@ -152,6 +153,7 @@ void singleData(int fd)
 {
 	char buf[2];
 	char cnt=0;
+	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
 
 	while(1)
 	{
