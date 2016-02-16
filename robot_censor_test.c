@@ -180,7 +180,7 @@ void singleData(int fd)
 
 		buf[1] = RightEncoderCounts;
 		write(fd, buf, 2);
-		//printf("Sent %d request of right encoder\n", cnt);
+		printf("Sent %d request of right encoder\n", cnt);
 
 		while(1)
 		{
