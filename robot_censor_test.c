@@ -5,6 +5,7 @@
 #include <time.h>
 
 const char		Start = 128;
+const char		Stop = 173;
 const char		Sensors = 142;					// 1:    Sensor Packet ID
 const char		SensorStream = 148;         // x+1: [# of packets requested] IDs of requested packets to stream
 const char		StreamPause = 150;
