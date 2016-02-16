@@ -614,8 +614,8 @@ void retrieveEncoder()
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
-			//usleep( 15 * 1000 );
 			printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+			usleep( 1000 );
 			memset(&data_packet, 0, sizeof(data_packet));
 			write(fdIRobot, buf, 2);
 			continue;
@@ -634,6 +634,7 @@ void retrieveEncoder()
 				// strange value happens retrieve again.
 				if(encdiff > 200 | encdiff < -200)
 				{
+					usleep( 1000 );
 					memset(&data_packet, 0, sizeof(data_packet));
 					write(fdIRobot, buf, 2);
 					continue;
@@ -647,9 +648,8 @@ void retrieveEncoder()
 
 	leftenPrev = leften;
 
-	//usleep( 15 * 1000 );
 	//memset (&data_packet, 0, sizeof(data_packet));
-
+	usleep( 1000 );
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
 	
@@ -659,6 +659,7 @@ void retrieveEncoder()
 		{
 			//usleep( 15 * 1000 );
 			printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+			usleep( 1000 );
 			memset(&data_packet, 0, sizeof(data_packet));
 			write(fdIRobot, buf, 2);
 			continue;
@@ -677,7 +678,7 @@ void retrieveEncoder()
 				// strange value happens retrieve again.
 				if(encdiff > 200 | encdiff < -200)
 				{
-
+					usleep( 1000 );
 					memset(&data_packet, 0, sizeof(data_packet));
 					write(fdIRobot, buf, 2);
 					continue;
