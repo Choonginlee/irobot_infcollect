@@ -542,7 +542,7 @@ void retrieveEncoder()
 	unsigned char data_packet[IROBOT_PACKET_SIZE];
 
 	// flush serial buffer before request
-	//tcflush(fdIRobot, TCIFLUSH);
+	tcflush(fdIRobot, TCIFLUSH);
 
 	buf[0] = (char)(StreamPause);
 	buf[1] = (char)(1);
@@ -599,7 +599,7 @@ void retrieveGyro()
 	unsigned char data_packet[GYRO_PACKET_SIZE];
 
 	// flush serial buffer before request
-	//tcflush(fdGyro, TCIFLUSH);
+	tcflush(fdGyro, TCIFLUSH);
 
 	//printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 
