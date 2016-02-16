@@ -599,7 +599,7 @@ void retrieveEncoder()
 	// flush serial buffer before request
 	//tcflush(fdIRobot, TCIFLUSH);
 	
-	usleep( 15 * 1000 );
+	//usleep( 15 * 1000 );
 
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
@@ -609,7 +609,7 @@ void retrieveEncoder()
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
-			usleep( 15 * 1000 );
+			//usleep( 15 * 1000 );
 			write(fdIRobot, buf, 2);
 			continue;
 		}
@@ -618,7 +618,7 @@ void retrieveEncoder()
 		break;
 	}
 
-	usleep( 15 * 1000 );
+	//usleep( 15 * 1000 );
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
@@ -627,7 +627,7 @@ void retrieveEncoder()
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{
-			usleep( 15 * 1000 );
+			//usleep( 15 * 1000 );
 			write(fdIRobot, buf, 2);
 			continue;
 		}
@@ -850,6 +850,9 @@ int setGyro()
 	serialio.c_lflag = 0;
 	serialio.c_cc[VTIME] = 0; 
 	serialio.c_cc[VMIN] = 1; 
+
+	cfmakeraw(&serialio);
+
 	tcflush (fd, TCIFLUSH ); 			// flush mode mline
 	tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
 
@@ -861,7 +864,7 @@ int setIRobot()
 	int fd;
 
 	struct termios serialio;
-	fd = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY | O_NONBLOCK);
+	fd = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY);
 
 	if(fd < 0)
 	{
@@ -872,14 +875,20 @@ int setIRobot()
 
 	memset( &serialio, 0, sizeof(serialio) );
 	serialio.c_cflag = B115200;   // baud - 115200 
+
+	serialio.c_cflag &= ~CSIZE
 	serialio.c_cflag |= CS8;      // data bit - 8bit 
 	serialio.c_cflag |= CLOCAL;   // use local comm port 
 	serialio.c_cflag |= CREAD;    // read & write
+	serialio.c_cflag &= ~CSTOPB;
 	serialio.c_iflag = 0;         // no parity bit
 	serialio.c_oflag = 0;
 	serialio.c_lflag = 0;
-	serialio.c_cc[VTIME] = 0; 
-	serialio.c_cc[VMIN] = 1; 
+	serialio.c_cc[VTIME] = 1; 
+	serialio.c_cc[VMIN] = 5; 
+
+	cfmakeraw(&serialio);
+
 	tcflush (fd, TCIFLUSH ); 			// flush mode mline
 	tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
 
