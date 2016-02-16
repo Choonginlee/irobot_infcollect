@@ -276,7 +276,7 @@ void forward()
 	buf[2] = (char)(SPEED_RIGHT_STRAIGHT&0xFF);
 	buf[3] = (char)((SPEED_LEFT_STRAIGHT>>8)&0xFF);
 	buf[4] = (char)(SPEED_LEFT_STRAIGHT&0xFF);
-	printf("[+] Send msg : %x%x%x%x%x(Forward straight)\n", buf[0], buf[1], buf[2], buf[3], buf[4]);
+	printf("[+] Send msg : (Forward straight)\n");
 	write(fdIRobot, buf, 5);
 }
 
@@ -548,7 +548,7 @@ void retrieveEncoder()
 	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
 	
 	// flush serial buffer before request
-	tcflush(fdIRobot, TCIFLUSH);
+	//tcflush(fdIRobot, TCIFLUSH);
 
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	buf[0] = (char)(StreamPause);
