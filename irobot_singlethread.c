@@ -119,7 +119,8 @@ void main()
 			case 1:
 				start();
 				drive();
-				quit();
+				pthread_exit((void *) 0);
+				quit(); // end process
 				break;
 			case 2:
 				start();
@@ -127,7 +128,8 @@ void main()
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
 				zigzag(length, width, numlength);
-				quit();
+				pthread_exit((void *) 0);
+				quit(); // end process
 				break;
 			case 3:				
 				quit();
@@ -428,7 +430,7 @@ void quit()
 	rc = pthread_join(p_thread, (void **)&status);
 	if(rc == 0)
 	{
-		printf("[+] Recording thread clear..\n")	
+		printf("[+] Recording thread clear..\n");
 	}
 
 	printf("=====   GOOD BYE   =====\n");
