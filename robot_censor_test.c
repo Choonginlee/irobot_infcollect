@@ -160,6 +160,8 @@ void singleData(int fd)
 	{
 		cnt++;
 
+		tcflush(fd, TCIFLUSH);
+
 		buf[0] = Sensors;
 		buf[1] = LeftEncoderCounts;
 		write(fd, buf, 2);
@@ -170,6 +172,7 @@ void singleData(int fd)
 			if(IROBOT_PACKET_SIZE_SENSORS != read(fd, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 			{
 				//printf("Not valid packet size\n");
+				sleep( 15 * 1000 );
 				write(fd, buf, 2);
 				continue;
 			}
@@ -179,6 +182,8 @@ void singleData(int fd)
 
 		printf("[V] data : [%x%x] \n", data_packet[0], data_packet[1]);
 
+		tcflush(fd, TCIFLUSH);
+		
 		buf[1] = RightEncoderCounts;
 		write(fd, buf, 2);
 		printf("Sent %d request of right encoder\n", cnt);
@@ -188,6 +193,7 @@ void singleData(int fd)
 			if(IROBOT_PACKET_SIZE_SENSORS != read(fd, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 			{
 				//printf("Not valid packet size\n");
+				sleep( 15 * 1000 );
 				write(fd, buf, 2);
 				continue;
 			}
