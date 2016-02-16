@@ -138,7 +138,6 @@ void streamData(int fd)
 			//righten = (data_packet[6] << 8) | data_packet[7];
 
 			printf("[%d] Data received\n", ++cnt);
-			break;
 		}
 	}
 
