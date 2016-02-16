@@ -502,7 +502,7 @@ void *receiveRecord(void *status)
         exit(0);
     }
 
-	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	// request censor stream for two bytes (LeftCnt / RightCnt)
 	buf[0] = (char)(SensorStream);
 	buf[1] = (char)(2);
@@ -511,7 +511,7 @@ void *receiveRecord(void *status)
 	write(fdIRobot, buf, 4);
 
 	printf("[+] Sent request SensorStream\n");
-	*************************************************/
+	//*************************************************/
 
     // Start Recording
     while(1)
@@ -542,15 +542,21 @@ void retrieveEncoder()
 	unsigned short leften;
 	unsigned short righten;
 	struct timeval encEndTime;
-	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
-	//unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
-	*************************************************/
-	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
+	///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
+	//*************************************************/
 
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
-	buf[0] = (char)(StreamPause);
-	buf[1] = (char)(1);
-	write(fdIRobot, buf, 2);
+	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
+	*************************************************/
+
+	///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	//buf[0] = (char)(StreamPause);
+	//buf[1] = (char)(1);
+	//write(fdIRobot, buf, 2);
+
+	// flush serial buffer before request
+	tcflush(fdIRobot, TCIFLUSH);
 
 	while(1)
 	{
@@ -579,14 +585,14 @@ void retrieveEncoder()
 	}
 	gettimeofday(&encEndTime, NULL);
 
-	buf[0] = (char)(StreamPause);
-	buf[1] = (char)(0);
-	write(fdIRobot, buf, 2);
+	//buf[0] = (char)(StreamPause);
+	//buf[1] = (char)(0);
+	//write(fdIRobot, buf, 2);
 
-	*************************************************/
+	//*************************************************/
 
-	/********** Stream pause / resume ************** (METHOD 2)
-	*************************************************/
+	/********** Single Request ************** (METHOD 2)
+
 
 	// flush serial buffer before request
 	//tcflush(fdIRobot, TCIFLUSH);
@@ -621,6 +627,7 @@ void retrieveEncoder()
 	}
 
 	gettimeofday(&encEndTime, NULL);
+	*************************************************/
 
 	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	encLeftCnt = leften;
