@@ -158,9 +158,12 @@ void singleData(int fd)
 
 	while(1)
 	{
+		cnt++;
+
 		buf[0] = Sensors;
 		buf[1] = LeftEncoderCounts;
 		write(fd, buf, 2);
+		printf("Sent %d request of left encoder\n", cnt);
 
 		while(1)
 		{
@@ -177,7 +180,8 @@ void singleData(int fd)
 
 		buf[1] = RightEncoderCounts;
 		write(fd, buf, 2);
-		
+		printf("Sent %d request of right encoder\n", cnt);
+
 		while(1)
 		{
 			if(IROBOT_PACKET_SIZE_SENSORS != read(fd, data_packet, IROBOT_PACKET_SIZE_SENSORS))
@@ -190,7 +194,8 @@ void singleData(int fd)
 		}
 
 		printf("[%x%x]\n", data_packet[0], data_packet[1]);
-		printf("[%d] Data received\n", ++cnt);
+		printf("[%d] Data received\n", cnt);
+
 	}
 }
 
