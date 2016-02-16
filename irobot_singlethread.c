@@ -616,8 +616,8 @@ void retrieveEncoder()
 		{		
 			//usleep( 15 * 1000 );
 			printf("leften : invalid packet size %x%x \n", data_packet[0], data_packet[1]);
-			memset (&data_packet, '\0', sizeof(data_packet));
-			//write(fdIRobot, buf, 2);
+			memset(&data_packet, 0, sizeof(data_packet));
+			write(fdIRobot, buf, 2);
 			continue;
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
@@ -634,6 +634,7 @@ void retrieveEncoder()
 				// strange value happens retrieve again.
 				if(encdiff > 200 | encdiff < -200)
 				{
+					memset(&data_packet, 0, sizeof(data_packet));
 					write(fdIRobot, buf, 2);
 					continue;
 				}
@@ -647,7 +648,7 @@ void retrieveEncoder()
 	leftenPrev = leften;
 
 	//usleep( 15 * 1000 );
-	//memset (&data_packet, '\0', sizeof(data_packet));
+	//memset (&data_packet, 0, sizeof(data_packet));
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
@@ -658,8 +659,8 @@ void retrieveEncoder()
 		{
 			//usleep( 15 * 1000 );
 			printf("righten : invalid packet size %x%x \n", data_packet[0], data_packet[1]);
-			memset (&data_packet, '\0', sizeof(data_packet));
-			//write(fdIRobot, buf, 2);
+			memset(&data_packet, 0, sizeof(data_packet));
+			write(fdIRobot, buf, 2);
 			continue;
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
@@ -676,6 +677,9 @@ void retrieveEncoder()
 				// strange value happens retrieve again.
 				if(encdiff > 200 | encdiff < -200)
 				{
+
+					memset(&data_packet, 0, sizeof(data_packet));
+					write(fdIRobot, buf, 2);
 					continue;
 				}
 
