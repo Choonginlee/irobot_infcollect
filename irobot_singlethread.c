@@ -502,7 +502,7 @@ void *receiveRecord(void *status)
         exit(0);
     }
 
-	///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	// request censor stream for two bytes (LeftCnt / RightCnt)
 	buf[0] = (char)(SensorStream);
 	buf[1] = (char)(2);
@@ -511,7 +511,7 @@ void *receiveRecord(void *status)
 	write(fdIRobot, buf, 4);
 
 	printf("[+] Sent request SensorStream\n");
-	//*************************************************/
+	*************************************************/
 
     // Start Recording
     while(1)
@@ -519,11 +519,11 @@ void *receiveRecord(void *status)
     	//printf("[+] Enter retrieveEncoder \n");
     	retrieveEncoder();
     	//printf("[+] Enter retrieveGyro \n");
-    	//retrieveGyro();
-   		//imageCnt++;
-   		//pgrImageNumber = imageCnt;
+    	retrieveGyro();
+   		imageCnt++;
+   		pgrImageNumber = imageCnt;
     	//printf("[+] Enter retrieveImage \n");
-    	//retrieveImage();
+    	retrieveImage();
 
 		// Record saved image info
         sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
