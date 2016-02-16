@@ -382,21 +382,22 @@ void quit()
 {
 	fc2Error error;
 	int rc;
-	char buf[2];
+	char buf_one[1];
+	char buf_two[2];
 
 	// stop drive
 	pauseDrive();
 
  	// pause stream
-	buf[0] = StreamPause;
-	buf[1] = 0;
-	printf("[+] Send msg : %d%d (Pause Stream)\n", buf[0], buf[1]);
-	write(fdIRobot, buf, 2);
+	buf_two[0] = StreamPause;
+	buf_two[1] = 0;
+	printf("[+] Send msg : %d%d (Pause Stream)\n", buf_two[0], buf_two[1]);
+	write(fdIRobot, buf_two, 2);
 
 	// stop OI
-	buf[0] = Stop;
-	printf("[+] Send msg : %d (Stop OI) \n", buf[0]);
-	write(fdIRobot, buf, 1);
+	buf_one[0] = Stop;
+	printf("[+] Send msg : %d (Stop OI) \n", buf_one[0]);
+	write(fdIRobot, buf_one, 1);
 
 	printf("[+] iRobot working clear..\n");
 
@@ -502,6 +503,8 @@ void *receiveRecord(void *status)
 	buf[3] = (char)(RightEncoderCounts);
 	write(fdIRobot, buf, 4);
 
+	printf("[+] Sent request SensorStream\n");
+
     // Start Recording
     while(1)
     {
@@ -523,6 +526,60 @@ void *receiveRecord(void *status)
     }
 
 
+}
+
+void retrieveEncoder()
+{
+	char buf[2];
+	unsigned short leften;
+	unsigned short righten;
+	struct timeval encEndTime;
+	unsigned char data_packet[IROBOT_PACKET_SIZE];
+
+	// flush serial buffer before request
+	//tcflush(fdIRobot, TCIFLUSH);
+
+	buf[0] = (char)(StreamPause);
+	buf[1] = (char)(1);
+	write(fdIRobot, buf, 2);
+
+	while(1)
+	{
+		// The data received should be 9 bytes
+		// [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
+		// [19][6][43][xxxx][44][xxxx][xxx]
+		if(IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE))
+		{
+			//printf("Not valid packet size\n");
+			continue;
+		}
+
+		// 9 bytes detected. check header and bytes
+		if(data_packet[0] == 19 && data_packet[1] == 6)
+		{
+			// check packet ID 1
+			if(data_packet[2] != 43 || data_packet[5] != 44)
+			{
+				continue;
+			}
+			leften = (data_packet[3] << 8) | data_packet[4];
+			righten = (data_packet[6] << 8) | data_packet[7];
+
+			break;
+		}
+	}
+
+	gettimeofday(&encEndTime, NULL);
+
+	buf[0] = (char)(StreamPause);
+	buf[1] = (char)(0);
+	write(fdIRobot, buf, 2);
+
+	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+	encLeftCnt = leften;
+	encRightCnt = righten;
+
+	return;
 }
 
 void retrieveGyro()
@@ -573,60 +630,6 @@ void retrieveGyro()
 
 	 	return;
 	}
-}
-
-void retrieveEncoder()
-{
-	char buf[4];
-	unsigned short leften;
-	unsigned short righten;
-	struct timeval encEndTime;
-	unsigned char data_packet[IROBOT_PACKET_SIZE];
-
-	// flush serial buffer before request
-	//tcflush(fdIRobot, TCIFLUSH);
-
-	buf[0] = (char)(StreamPause);
-	buf[1] = (char)(1);
-	write(fdIRobot, buf, 2);
-
-	while(1)
-	{
-		// The data received should be 9 bytes
-		// [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
-		// [19][6][43][xxxx][44][xxxx][xxx]
-		if(IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE))
-		{
-			//printf("Not valid packet size\n");
-			continue;
-		}
-
-		// 9 bytes detected. check header and bytes
-		if(data_packet[0] == 19 && data_packet[1] == 6)
-		{
-			// check packet ID 1
-			if(data_packet[2] != 43 || data_packet[5] != 44)
-			{
-				continue;
-			}
-			leften = (data_packet[3] << 8) | data_packet[4];
-			righten = (data_packet[6] << 8) | data_packet[7];
-
-			break;
-		}
-	}
-
-	gettimeofday(&encEndTime, NULL);
-
-	buf[0] = (char)(StreamPause);
-	buf[1] = (char)(0);
-	write(fdIRobot, buf, 2);
-
-	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
-	encLeftCnt = leften;
-	encRightCnt = righten;
-
-	return;
 }
 
 void retrieveImage()
