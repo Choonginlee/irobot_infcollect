@@ -186,8 +186,8 @@ void start()
 	printf("[+] Start char. %x\n", buf[0]);
 	write(fdIRobot, buf, 1);
 
-	buf[0] = SafeMode;
-	printf("[+] SafeMode char. %x\n", buf[0]);
+	buf[0] = FullMode;
+	printf("[+] FullMode char. %x\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	
 	printf("[+] Please wait for iRobot to be stabilized..\n");
