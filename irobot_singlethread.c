@@ -589,7 +589,7 @@ void retrieveEncoder()
 	*************************************************/
 
 	// flush serial buffer before request
-	tcflush(fdIRobot, TCIFLUSH);
+	//tcflush(fdIRobot, TCIFLUSH);
 
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
