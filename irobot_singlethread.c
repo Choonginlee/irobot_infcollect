@@ -548,7 +548,7 @@ void retrieveEncoder()
 	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
 	
 	// flush serial buffer before request
-	//tcflush(fdIRobot, TCIFLUSH);
+	tcflush(fdIRobot, TCIFLUSH);
 
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	buf[0] = (char)(StreamPause);
@@ -602,10 +602,13 @@ void retrieveEncoder()
 			continue;
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
+		break;
 	}
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
+
+	usleep( 10 * 1000 );
 
 	while(1)
 	{
@@ -615,6 +618,7 @@ void retrieveEncoder()
 			continue;
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
+		break;
 	}
 
 	gettimeofday(&encEndTime, NULL);
