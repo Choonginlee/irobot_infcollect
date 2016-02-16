@@ -161,6 +161,7 @@ void singleData(int fd)
 		cnt++;
 
 		//tcflush(fd, TCIFLUSH);
+		sleep( 15 * 1000 );
 
 		buf[0] = Sensors;
 		buf[1] = LeftEncoderCounts;
@@ -182,7 +183,8 @@ void singleData(int fd)
 
 		printf("[V] data : [%x%x] \n", data_packet[0], data_packet[1]);
 
-		tcflush(fd, TCIFLUSH);
+		//tcflush(fd, TCIFLUSH);
+		sleep( 15 * 1000 );
 
 		buf[1] = RightEncoderCounts;
 		write(fd, buf, 2);
