@@ -599,7 +599,7 @@ void retrieveEncoder()
 	// flush serial buffer before request
 	//tcflush(fdIRobot, TCIFLUSH);
 	
-	usleep( 5 * 1000 );
+	usleep( 10 * 1000 );
 
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
@@ -609,7 +609,7 @@ void retrieveEncoder()
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
-			usleep( 5 * 1000 );
+			usleep( 10 * 1000 );
 			write(fdIRobot, buf, 2);
 			continue;
 		}
@@ -618,7 +618,7 @@ void retrieveEncoder()
 		break;
 	}
 
-	usleep( 5 * 1000 );
+	usleep( 10 * 1000 );
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
@@ -627,7 +627,7 @@ void retrieveEncoder()
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{
-			usleep( 5 * 1000 );
+			usleep( 10 * 1000 );
 			write(fdIRobot, buf, 2);
 			continue;
 		}
