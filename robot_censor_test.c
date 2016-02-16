@@ -160,7 +160,7 @@ void singleData(int fd)
 	{
 		cnt++;
 
-		tcflush(fd, TCIFLUSH);
+		//tcflush(fd, TCIFLUSH);
 
 		buf[0] = Sensors;
 		buf[1] = LeftEncoderCounts;
@@ -183,7 +183,7 @@ void singleData(int fd)
 		printf("[V] data : [%x%x] \n", data_packet[0], data_packet[1]);
 
 		tcflush(fd, TCIFLUSH);
-		
+
 		buf[1] = RightEncoderCounts;
 		write(fd, buf, 2);
 		printf("Sent %d request of right encoder\n", cnt);
