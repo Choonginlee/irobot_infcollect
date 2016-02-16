@@ -548,7 +548,7 @@ void retrieveEncoder()
 	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
 	
 	// flush serial buffer before request
-	tcflush(fdIRobot, TCIFLUSH);
+	//tcflush(fdIRobot, TCIFLUSH);
 
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	buf[0] = (char)(StreamPause);
