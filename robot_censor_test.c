@@ -161,4 +161,6 @@ void quit(int fd)
 	write(fd, buf2, 1);
 
 	close(fd);
+
+	exit(0);
 }
