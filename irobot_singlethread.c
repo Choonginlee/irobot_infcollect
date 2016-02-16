@@ -601,7 +601,7 @@ void retrieveEncoder()
 	
 	//usleep( 15 * 1000 );
 
-	memset (&data_packet, '\0', sizeof(data_packet));
+	//memset (&data_packet, '\0', sizeof(data_packet));
 
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
@@ -612,7 +612,7 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
 			//usleep( 15 * 1000 );
-			write(fdIRobot, buf, 2);
+			//write(fdIRobot, buf, 2);
 			continue;
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
@@ -621,7 +621,7 @@ void retrieveEncoder()
 	}
 
 	//usleep( 15 * 1000 );
-	memset (&data_packet, '\0', sizeof(data_packet));
+	//memset (&data_packet, '\0', sizeof(data_packet));
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
@@ -631,7 +631,7 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{
 			//usleep( 15 * 1000 );
-			write(fdIRobot, buf, 2);
+			//write(fdIRobot, buf, 2);
 			continue;
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
