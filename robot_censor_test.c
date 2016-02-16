@@ -1,6 +1,7 @@
 #include <stdio.h>
+#include <unistd.h>
 #include <termios.h>
-#include <termios.h>
+#include <fcntl.h>
 #include <time.h>
 
 const char		Start = 128;
@@ -14,6 +15,12 @@ const char		RightEncoderCounts = 44;
 
 const int		IROBOT_PACKET_SIZE_STREAM = 9;	// irobot packet size
 
+
+void start(int fd);
+int setIRobot();
+void streamData(int fd);
+void quit(int fd);
+
 void main()
 {
 	int n;
@@ -25,7 +32,7 @@ void main()
 	printf("Cmd : ");
 	scanf("%d", n);
 
-	switch(m)
+	switch(n)
 	{
 		case 1:
 			start(fd);
@@ -38,10 +45,12 @@ void main()
 		case 4:
 			quit(fd);
 			break;
+		default:
+			break;
 	}
 }
 
-void start(int fd);
+void start(int fd)
 {
 	char buf[1];
 	
