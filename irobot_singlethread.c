@@ -546,6 +546,7 @@ void retrieveEncoder()
 	unsigned short righten;
 	unsigned short leftenPrev=0;		// this is for storing last value
 	unsigned short rightenPrev=0;		// this is for storing last value
+	int encdiff;
 	struct timeval encLEndTime;
 	struct timeval encREndTime;
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
@@ -623,6 +624,24 @@ void retrieveEncoder()
 		gettimeofday(&encLEndTime, NULL);
 		break;
 	}
+	encdiff = leftenPrev - leften;
+
+	//Quality assuarance
+	if(leftenPrev != 0)
+	{
+		// except rollover
+		if(encdiff > -65000 && encdiff < 65000)
+		{
+			// strange value happens retrieve again.
+			if(encdiff > 200 | encdiff < -200)
+			{
+				continue;
+			}
+
+		}
+	}
+
+	leftenPrev = leften;
 
 	//usleep( 15 * 1000 );
 	//memset (&data_packet, '\0', sizeof(data_packet));
@@ -644,6 +663,25 @@ void retrieveEncoder()
 		gettimeofday(&encREndTime, NULL);
 		break;
 	}
+
+	encdiff = rightenPrev - righten;
+
+	//Quality assuarance
+	if(rightenPrev != 0)
+	{
+		// except rollover
+		if(encdiff > -65000 && encdiff < 65000)
+		{
+			// strange value happens retrieve again.
+			if(encdiff > 200 | encdiff < -200)
+			{
+				continue;
+			}
+
+		}
+	}
+
+	rightenPrev = righten;
 
 	//*************************************************/
 
