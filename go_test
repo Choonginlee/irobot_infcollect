@@ -1,0 +1,3 @@
+#!bin/bash
+
+gcc robot_censor_test.c -o test
