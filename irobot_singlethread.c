@@ -56,7 +56,8 @@ int fdIRobot;
 // Global variable for record
 float gyroElapsedTime;
 int gyroAngleData;
-float encElapsedTime;
+float encLElapsedTime;
+float encRElapsedTime;
 unsigned short encLeftCnt;
 unsigned short encRightCnt;
 float pgrElapsedTime;
@@ -108,7 +109,6 @@ void main()
 	context = setPGR();
 	fdGyro = setGyro();
 	fdIRobot = setIRobot();
-	printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
 	showInstruction();
 
 	while(1)
@@ -188,7 +188,8 @@ void start()
 	printf("[+] SafeMode char. %x\n", buf[0]);
 	write(fdIRobot, buf, 1);
 	
-	usleep( 1000 * 1000 );
+	printf("[+] Please wait for iRobot to be stabilized..\n");
+	usleep( 4000 * 1000 );
 	
 }
 
@@ -208,7 +209,7 @@ drive
 */
 void drive()
 {
-	printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
+	//printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
 	char dir;
 
 	thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)&status);
@@ -464,12 +465,6 @@ void *receiveRecord(void *status)
     int fdTxt; // file descriptor for writing file
     int imageCnt = 0;
 
-    // base time set
-    gettimeofday(&startTime, NULL);
-    //SetTimeStamping( context, TRUE );
-
-    printf("[+] Start Recording..\n");
-
     // ready for writing 
     fdTxt = open("./result/result.txt", O_WRONLY | O_CREAT, 0644);
 	if(fdTxt < 0)
@@ -477,7 +472,10 @@ void *receiveRecord(void *status)
 		perror("./result/pgr.txt");
 		exit(0);
 	}
-    sprintf(writeLine, "TimeImg\tImage #\tTimeGyro\tdegree\tTimeEnc\tleftEnc\trightEnc\n");
+    sprintf(writeLine, "TimeImg\tImage #\t
+    	TimeGyro\tdegree\t
+    	TimeLnc\tleftEnc\t
+    	TimeREnc\trightEnc\n");
     write(fdTxt, writeLine, strlen(writeLine));
 
     error = fc2StartCapture( context );
@@ -501,6 +499,13 @@ void *receiveRecord(void *status)
 
         exit(0);
     }
+
+
+    // base time set
+    gettimeofday(&startTime, NULL);
+    //SetTimeStamping( context, TRUE );
+
+    printf("[+] Start Recording..\n");
 
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	// request censor stream for two bytes (LeftCnt / RightCnt)
@@ -526,10 +531,15 @@ void *receiveRecord(void *status)
     	retrieveImage();
 
 		// Record saved image info
-        sprintf(writeLine, "%.4f, %d, %.4f, %d, %.4f, %u, %u\n", 
+        sprintf(writeLine, 
+        	"%.4f, %d, 
+        	%.4f, %d, 
+        	%.4f, %u, 
+        	%.4f, %u\n", 
         	pgrElapsedTime, pgrImageNumber,				// record pgr data capture
         	gyroElapsedTime, gyroAngleData,				// record gyro data capture
-        	encElapsedTime, encLeftCnt, encRightCnt);	// record irobot data capture
+        	encLElapsedTime, encLeftCnt, 				// record irobot data capture
+        	encRElapsedTime, encRightCnt);				// record irobot data capture
         write(fdTxt, writeLine, strlen(writeLine));
     }
 
@@ -541,7 +551,8 @@ void retrieveEncoder()
 	char buf[2];
 	unsigned short leften;
 	unsigned short righten;
-	struct timeval encEndTime;
+	struct timeval encLEndTime;
+	struct timeval encREndTime;
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
 	//*************************************************/
@@ -582,7 +593,7 @@ void retrieveEncoder()
 			break;
 		}
 	}
-	gettimeofday(&encEndTime, NULL);
+	gettimeofday(&encREndTime, NULL);
 
 	//buf[0] = (char)(StreamPause);
 	//buf[1] = (char)(0);
@@ -595,7 +606,7 @@ void retrieveEncoder()
 	// flush serial buffer before request
 	//tcflush(fdIRobot, TCIFLUSH);
 	
-	usleep( 15 * 1000 );
+	usleep( 5 * 1000 );
 
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
@@ -605,15 +616,16 @@ void retrieveEncoder()
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
-			usleep( 15 * 1000 );
+			usleep( 5 * 1000 );
 			write(fdIRobot, buf, 2);
 			continue;
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
+		gettimeofday(&encLEndTime, NULL);
 		break;
 	}
 
-	usleep( 15 * 1000 );
+	usleep( 5 * 1000 );
 
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
@@ -622,18 +634,19 @@ void retrieveEncoder()
 	{
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{
-			usleep( 15 * 1000 );
+			usleep( 5 * 1000 );
 			write(fdIRobot, buf, 2);
 			continue;
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
+		gettimeofday(&encREndTime, NULL);
 		break;
 	}
 
-	gettimeofday(&encEndTime, NULL);
 	//*************************************************/
 
-	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+	encLElapsedTime = ((double)(encLEndTime.tv_sec)+(double)(encLEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+	encRElapsedTime = ((double)(encREndTime.tv_sec)+(double)(encREndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	encLeftCnt = leften;
 	encRightCnt = righten;
 
