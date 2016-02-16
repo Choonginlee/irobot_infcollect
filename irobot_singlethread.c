@@ -623,6 +623,7 @@ void retrieveEncoder()
 		leften = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encLEndTime, NULL);
 
+		/*
 		encdiff = leftenPrev - leften;
 
 		//Quality assuarance
@@ -642,6 +643,8 @@ void retrieveEncoder()
 
 			}
 		}
+
+		*/
 		//printf("Enddiff : L %d ", encdiff);
 		break;
 	}
@@ -667,6 +670,7 @@ void retrieveEncoder()
 		righten = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encREndTime, NULL);
 
+		/*
 		encdiff = rightenPrev - righten;
 
 		//Quality assuarance
@@ -688,7 +692,8 @@ void retrieveEncoder()
 		}
 
 		//printf("R %d\n", encdiff);
-
+		*/
+		
 		break;
 	}
 
