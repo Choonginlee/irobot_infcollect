@@ -119,7 +119,7 @@ void main()
 			case 1:
 				start();
 				drive();
-				pthread_exit((void *) 0);
+				//pthread_exit((void *) 0);
 				quit(); // end process
 				break;
 			case 2:
@@ -128,7 +128,7 @@ void main()
 				printf("[Q] Please enter length / width / # of length : ");
 				scanf("%d %d %d", &length, &width, &numlength);
 				zigzag(length, width, numlength);
-				pthread_exit((void *) 0);
+				//pthread_exit((void *) 0);
 				quit(); // end process
 				break;
 			case 3:				
@@ -139,6 +139,9 @@ void main()
 				break;
 			case 5:
 				clean();
+				break;
+			case 6:
+				start();
 				break;
 			default:
 				printf("[-] Wrong input! Exit. : ");
