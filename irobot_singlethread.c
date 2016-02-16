@@ -546,9 +546,6 @@ void retrieveEncoder()
 	//unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
 	*************************************************/
 	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
-	
-	// flush serial buffer before request
-	//tcflush(fdIRobot, TCIFLUSH);
 
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	buf[0] = (char)(StreamPause);
@@ -590,6 +587,10 @@ void retrieveEncoder()
 
 	/********** Stream pause / resume ************** (METHOD 2)
 	*************************************************/
+
+	// flush serial buffer before request
+	tcflush(fdIRobot, TCIFLUSH);
+
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
 	write(fdIRobot, buf, 2);
