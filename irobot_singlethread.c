@@ -29,7 +29,8 @@ const char		Distance = 19;
 const char		Angle = 20;
 
 const int		GYRO_PACKET_SIZE = 8; 			// gyro packet size
-const int		IROBOT_PACKET_SIZE = 9;			// irobot packet size
+const int		IROBOT_PACKET_SIZE_STREAM = 9;	// irobot packet size
+const int		IROBOT_PACKET_SIZE_SENSORS = 2;	// irobot packet size
 const float		MM_PER_COUNTER = 0.4446;		// mm travel per counter
 const int		COUNTER_PER_RANGLE = 410;		// counters per 90 angle
 
@@ -501,6 +502,7 @@ void *receiveRecord(void *status)
         exit(0);
     }
 
+	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	// request censor stream for two bytes (LeftCnt / RightCnt)
 	buf[0] = (char)(SensorStream);
 	buf[1] = (char)(2);
@@ -509,6 +511,7 @@ void *receiveRecord(void *status)
 	write(fdIRobot, buf, 4);
 
 	printf("[+] Sent request SensorStream\n");
+	*************************************************/
 
     // Start Recording
     while(1)
@@ -539,11 +542,15 @@ void retrieveEncoder()
 	unsigned short leften;
 	unsigned short righten;
 	struct timeval encEndTime;
-	unsigned char data_packet[IROBOT_PACKET_SIZE];
-
+	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	//unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
+	*************************************************/
+	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
+	
 	// flush serial buffer before request
 	tcflush(fdIRobot, TCIFLUSH);
 
+	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	buf[0] = (char)(StreamPause);
 	buf[1] = (char)(1);
 	write(fdIRobot, buf, 2);
@@ -553,7 +560,7 @@ void retrieveEncoder()
 		// The data received should be 9 bytes
 		// [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
 		// [19][6][43][xxxx][44][xxxx][xxx]
-		if(IROBOT_PACKET_SIZE != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE))
+		if(IROBOT_PACKET_SIZE_STREAM != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_STREAM))
 		{
 			//printf("Not valid packet size\n");
 			continue;
@@ -573,12 +580,43 @@ void retrieveEncoder()
 			break;
 		}
 	}
-
 	gettimeofday(&encEndTime, NULL);
 
 	buf[0] = (char)(StreamPause);
 	buf[1] = (char)(0);
 	write(fdIRobot, buf, 2);
+
+	*************************************************/
+
+	/********** Stream pause / resume ************** (METHOD 2)
+	*************************************************/
+	buf[0] = Sensors;
+	buf[1] = LeftEncoderCounts;
+	write(fdIRobot, buf, 2);
+
+	while(1)
+	{
+		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+		{
+			//printf("Not valid packet size\n");
+			continue;
+		}
+		leften = (data_packet[0] << 8) | data_packet[1];
+	}
+
+	buf[1] = RightEncoderCounts;
+	write(fdIRobot, buf, 2);
+
+	while(1)
+	{
+		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+		{
+			//printf("Not valid packet size\n");
+			continue;
+		}
+		righten = (data_packet[0] << 8) | data_packet[1];
+	}
+
 
 	encElapsedTime = ((double)(encEndTime.tv_sec)+(double)(encEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	encLeftCnt = leften;
