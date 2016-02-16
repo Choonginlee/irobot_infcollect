@@ -876,7 +876,7 @@ int setIRobot()
 	memset( &serialio, 0, sizeof(serialio) );
 	serialio.c_cflag = B115200;   // baud - 115200 
 
-	serialio.c_cflag &= ~CSIZE
+	serialio.c_cflag &= ~CSIZE;
 	serialio.c_cflag |= CS8;      // data bit - 8bit 
 	serialio.c_cflag |= CLOCAL;   // use local comm port 
 	serialio.c_cflag |= CREAD;    // read & write
