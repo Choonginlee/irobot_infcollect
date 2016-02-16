@@ -544,6 +544,8 @@ void retrieveEncoder()
 	char buf[2];
 	unsigned short leften;
 	unsigned short righten;
+	unsigned short leftenPrev;		// this is for storing last value
+	unsigned short rightenPrev;		// this is for storing last value
 	struct timeval encLEndTime;
 	struct timeval encREndTime;
 	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
@@ -612,7 +614,8 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
 			//usleep( 15 * 1000 );
-			//write(fdIRobot, buf, 2);
+			memset (&data_packet, '\0', sizeof(data_packet));
+			write(fdIRobot, buf, 2);
 			continue;
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
@@ -631,7 +634,8 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{
 			//usleep( 15 * 1000 );
-			//write(fdIRobot, buf, 2);
+			memset (&data_packet, '\0', sizeof(data_packet));
+			write(fdIRobot, buf, 2);
 			continue;
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
@@ -887,7 +891,7 @@ int setIRobot()
 	serialio.c_iflag = 0;         // no parity bit
 	serialio.c_oflag = 0;
 	serialio.c_lflag = 0;
-	serialio.c_cc[VTIME] = 0; 
+	serialio.c_cc[VTIME] = 1; 
 	serialio.c_cc[VMIN] = 2; 
 
 	cfmakeraw(&serialio);
