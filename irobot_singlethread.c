@@ -606,7 +606,7 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
 			usleep( 15 * 1000 );
-			write(fd, buf, 2);
+			write(fdIRobot, buf, 2);
 			continue;
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
@@ -623,7 +623,7 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{
 			usleep( 15 * 1000 );
-			write(fd, buf, 2);
+			write(fdIRobot, buf, 2);
 			continue;
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
