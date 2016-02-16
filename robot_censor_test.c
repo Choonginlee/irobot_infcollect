@@ -36,21 +36,24 @@ void main()
 	printf("Cmd : ");
 	scanf("%d", &n);
 
-	switch(n)
+	while(1)
 	{
-		case 1:
-			start(fd);
-			break;
-		case 2:
-			streamData(fd);
-			break;
-		case 3:
-			break;
-		case 4:
-			quit(fd);
-			break;
-		default:
-			break;
+		switch(n)
+		{
+			case 1:
+				start(fd);
+				break;
+			case 2:
+				streamData(fd);
+				break;
+			case 3:
+				break;
+			case 4:
+				quit(fd);
+				break;
+			default:
+				break;
+		}
 	}
 }
 
@@ -74,7 +77,7 @@ int setIRobot()
 {
 	int fd;
 	struct termios serialio;
-	
+
 	fd = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY | O_NONBLOCK);
 
 	if(fd < 0)
