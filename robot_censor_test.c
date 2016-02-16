@@ -47,6 +47,7 @@ void main()
 				streamData(fd);
 				break;
 			case 3:
+				singleData(fd);
 				break;
 			case 4:
 				quit(fd);
@@ -144,6 +145,49 @@ void streamData(int fd)
 
 			printf("[%d] Data received\n", ++cnt);
 		}
+	}
+}
+
+void singleData(int fd)
+{
+	char buf[2];
+	char cnt=0;
+
+	while(1)
+	{
+		buf[0] = Sensors;
+		buf[1] = LeftEncoderCounts;
+		write(fdIRobot, buf, 2);
+
+		while(1)
+		{
+			if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+			{
+				//printf("Not valid packet size\n");
+				continue;
+			}
+			leften = (data_packet[0] << 8) | data_packet[1];
+			break;
+		}
+
+		printf("[V] data : [%x%x] ", data_packet[0], data_packet[1]);
+
+		buf[1] = RightEncoderCounts;
+		write(fdIRobot, buf, 2);
+		
+		while(1)
+		{
+			if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+			{
+				//printf("Not valid packet size\n");
+				continue;
+			}
+			righten = (data_packet[0] << 8) | data_packet[1];
+			break;
+		}
+		
+		printf("[%x%x]\n", data_packet[0], data_packet[1]);
+		printf("[%d] Data received\n", ++cnt);
 	}
 }
 
