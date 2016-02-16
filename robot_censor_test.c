@@ -24,6 +24,7 @@ const int		IROBOT_PACKET_SIZE_SENSORS = 2;	// irobot packet size
 void start(int fd);
 int setIRobot();
 void streamData(int fd);
+void singleData(int fd);
 void quit(int fd);
 
 void main()
@@ -159,35 +160,35 @@ void singleData(int fd)
 	{
 		buf[0] = Sensors;
 		buf[1] = LeftEncoderCounts;
-		write(fdIRobot, buf, 2);
+		write(fd, buf, 2);
 
 		while(1)
 		{
-			if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+			if(IROBOT_PACKET_SIZE_SENSORS != read(fd, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 			{
 				//printf("Not valid packet size\n");
 				continue;
 			}
-			leften = (data_packet[0] << 8) | data_packet[1];
+			//leften = (data_packet[0] << 8) | data_packet[1];
 			break;
 		}
 
 		printf("[V] data : [%x%x] ", data_packet[0], data_packet[1]);
 
 		buf[1] = RightEncoderCounts;
-		write(fdIRobot, buf, 2);
+		write(fd, buf, 2);
 		
 		while(1)
 		{
-			if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+			if(IROBOT_PACKET_SIZE_SENSORS != read(fd, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 			{
 				//printf("Not valid packet size\n");
 				continue;
 			}
-			righten = (data_packet[0] << 8) | data_packet[1];
+			//righten = (data_packet[0] << 8) | data_packet[1];
 			break;
 		}
-		
+
 		printf("[%x%x]\n", data_packet[0], data_packet[1]);
 		printf("[%d] Data received\n", ++cnt);
 	}
