@@ -640,7 +640,7 @@ void retrieveEncoder()
 
 			}
 		}
-		printf("Enddiff : L %d ", encdiff);
+		//printf("Enddiff : L %d ", encdiff);
 		break;
 	}
 
@@ -682,7 +682,7 @@ void retrieveEncoder()
 			}
 		}
 
-		printf("R %d\n", encdiff);
+		//printf("R %d\n", encdiff);
 
 		break;
 	}
