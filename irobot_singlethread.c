@@ -62,6 +62,8 @@ unsigned short encLeftCnt;
 unsigned short encRightCnt;
 float pgrElapsedTime;
 int pgrImageNumber;
+unsigned short leftenPrev=0;		// this is for storing last value
+unsigned short rightenPrev=0;		// this is for storing last value
 
 void showInstruction();
 int rcvCommand();
@@ -544,8 +546,6 @@ void retrieveEncoder()
 	char buf[2];
 	unsigned short leften;
 	unsigned short righten;
-	unsigned short leftenPrev=0;		// this is for storing last value
-	unsigned short rightenPrev=0;		// this is for storing last value
 	int encdiff;
 	struct timeval encLEndTime;
 	struct timeval encREndTime;
@@ -657,7 +657,7 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{
 			//usleep( 15 * 1000 );
-			printf("leften : invalid packet size %x%x \n", data_packet[0], data_packet[1]);
+			printf("righten : invalid packet size %x%x \n", data_packet[0], data_packet[1]);
 			memset (&data_packet, '\0', sizeof(data_packet));
 			//write(fdIRobot, buf, 2);
 			continue;
