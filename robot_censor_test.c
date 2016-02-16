@@ -32,12 +32,12 @@ void main()
 
 	fd = setIRobot();
 
-	printf("1. Start 2. Stream 3. Single 4. Exit n pause\n");
-	printf("Cmd : ");
-	scanf("%d", &n);
-
 	while(1)
 	{
+		printf("1. Start 2. Stream 3. Single 4. Exit n pause\n");
+		printf("Cmd : ");
+		scanf("%d", &n);
+
 		switch(n)
 		{
 			case 1:
