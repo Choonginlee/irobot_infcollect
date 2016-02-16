@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <time.h>
@@ -72,8 +73,8 @@ void start(int fd)
 int setIRobot()
 {
 	int fd;
-
 	struct termios serialio;
+	
 	fd = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY | O_NONBLOCK);
 
 	if(fd < 0)
