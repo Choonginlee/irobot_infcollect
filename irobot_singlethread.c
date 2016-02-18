@@ -506,7 +506,7 @@ void *receiveRecord(void *status)
 
     printf("[+] Start Recording..\n");
 
-    /********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+    ///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
     // request censor stream for two bytes (LeftCnt / RightCnt)
     buf[0] = (char)(SensorStream);
     buf[1] = (char)(2);
@@ -515,7 +515,7 @@ void *receiveRecord(void *status)
     write(fdIRobot, buf, 4);
 
     printf("[+] Sent request SensorStream\n");
-    *************************************************/
+    //*************************************************/
 
     // Start Recording
     while(1)
