@@ -140,6 +140,7 @@ void streamData(int fd)
 			// check packet ID 1
 			if(data_packet[2] != 43 || data_packet[5] != 44)
 			{
+				memset(&data_packet, 0, sizeof(data_packet));
 				continue;
 			}
 			//leften = (data_packet[3] << 8) | data_packet[4];
