@@ -549,21 +549,18 @@ void retrieveEncoder()
 	int encdiff;
 	struct timeval encLEndTime;
 	struct timeval encREndTime;
-	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
 	//*************************************************/
 
-	///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	/********** Stream pause / resume ************** (METHOD 2. Occasional invalid packets)
 	unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
-	//*************************************************/
+	*************************************************/
 
-	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+	///********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
 	//buf[0] = (char)(StreamPause);
 	//buf[1] = (char)(1);
 	//write(fdIRobot, buf, 2);
-
-	// flush serial buffer before request
-	tcflush(fdIRobot, TCIFLUSH);
 
 	while(1)
 	{
@@ -572,6 +569,7 @@ void retrieveEncoder()
 		// [19][6][43][xxxx][44][xxxx][xxx]
 		if(IROBOT_PACKET_SIZE_STREAM != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_STREAM))
 		{
+			memset(&data_packet, 0, sizeof(data_packet));
 			continue;
 		}
 
@@ -581,6 +579,7 @@ void retrieveEncoder()
 			// check packet ID 1
 			if(data_packet[2] != 43 || data_packet[5] != 44)
 			{
+				memset(&data_packet, 0, sizeof(data_packet));
 				continue;
 			}
 			leften = (data_packet[3] << 8) | data_packet[4];
@@ -588,6 +587,7 @@ void retrieveEncoder()
 
 			break;
 		}
+		memset(&data_packet, 0, sizeof(data_packet));
 	}
 	gettimeofday(&encREndTime, NULL);
 
@@ -595,14 +595,9 @@ void retrieveEncoder()
 	//buf[1] = (char)(0);
 	//write(fdIRobot, buf, 2);
 
-	*************************************************/
+	//*************************************************/
 
-	///********** Single Request ************** (METHOD 2)
-
-	// flush serial buffer before request
-	//tcflush(fdIRobot, TCIFLUSH);
-	
-	//usleep( 15 * 1000 );
+	/********** Single Request ************** (METHOD 2)
 
 	//memset (&data_packet, '\0', sizeof(data_packet));
 
@@ -623,28 +618,24 @@ void retrieveEncoder()
 		leften = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encLEndTime, NULL);
 
-		/*
-		encdiff = leftenPrev - leften;
-
-		//Quality assuarance
-		if(leftenPrev != 0)
-		{
-			// except rollover
-			if(encdiff > -65000 && encdiff < 65000)
-			{
-				// strange value happens retrieve again.
-				if(encdiff > 200 | encdiff < -200)
-				{
-					usleep( 1000 );
-					memset(&data_packet, 0, sizeof(data_packet));
-					write(fdIRobot, buf, 2);
-					continue;
-				}
-
-			}
-		}
-
-		*/
+		
+		//encdiff = leftenPrev - leften;
+		// //Quality assuarance - work good, but troublesome when robot turns
+		// if(leftenPrev != 0)
+		// {
+		// 	// except rollover
+		// 	if(encdiff > -65000 && encdiff < 65000)
+		// 	{
+		// 		// strange value happens retrieve again.
+		// 		if(encdiff > 200 | encdiff < -200)
+		// 		{
+		// 			usleep( 1000 );
+		// 			memset(&data_packet, 0, sizeof(data_packet));
+		// 			write(fdIRobot, buf, 2);
+		// 			continue;
+		// 		}
+		// 	}
+		// }
 		//printf("Enddiff : L %d ", encdiff);
 		break;
 	}
@@ -670,36 +661,33 @@ void retrieveEncoder()
 		righten = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encREndTime, NULL);
 
-		/*
-		encdiff = rightenPrev - righten;
-
-		//Quality assuarance
-		if(rightenPrev != 0)
-		{
-			// except rollover
-			if(encdiff > -65000 && encdiff < 65000)
-			{
-				// strange value happens retrieve again.
-				if(encdiff > 200 | encdiff < -200)
-				{
-					usleep( 1000 );
-					memset(&data_packet, 0, sizeof(data_packet));
-					write(fdIRobot, buf, 2);
-					continue;
-				}
-
-			}
-		}
-
-		//printf("R %d\n", encdiff);
-		*/
+		
+		// encdiff = rightenPrev - righten;
+		// //Quality assuarance
+		// if(rightenPrev != 0)
+		// {
+		// 	// except rollover
+		// 	if(encdiff > -65000 && encdiff < 65000)
+		// 	{
+		// 		// strange value happens retrieve again.
+		// 		if(encdiff > 200 | encdiff < -200)
+		// 		{
+		// 			usleep( 1000 );
+		// 			memset(&data_packet, 0, sizeof(data_packet));
+		// 			write(fdIRobot, buf, 2);
+		// 			continue;
+		// 		}
+		// 	}
+		// }
+		// //printf("R %d\n", encdiff);
+		
 		
 		break;
 	}
 
 	rightenPrev = righten;
 
-	//*************************************************/
+	*************************************************/
 
 	encLElapsedTime = ((double)(encLEndTime.tv_sec)+(double)(encLEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
 	encRElapsedTime = ((double)(encREndTime.tv_sec)+(double)(encREndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
