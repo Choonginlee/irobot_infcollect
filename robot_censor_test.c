@@ -126,6 +126,7 @@ void streamData(int fd)
 		if(IROBOT_PACKET_SIZE_STREAM != read(fd, data_packet, IROBOT_PACKET_SIZE_STREAM))
 		{
 			//printf("Not valid packet size\n");
+			memset(&data_packet, 0, sizeof(data_packet));
 			continue;
 		}
 
@@ -148,6 +149,8 @@ void streamData(int fd)
 
 			printf("[%d] Data received\n", ++cnt);
 		}
+
+		memset(&data_packet, 0, sizeof(data_packet));
 	}
 }
 
