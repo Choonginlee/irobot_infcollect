@@ -616,7 +616,7 @@ void retrieveEncoder()
     {
         if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
         {       
-            printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+            //printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
             memset(&data_packet, 0, sizeof(data_packet));
             write(fdIRobot, buf, 2);
             continue;
@@ -631,7 +631,7 @@ void retrieveEncoder()
             // except rollover
             if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
             {
-                printf("Enddiff : L %d ", encdiff);
+                //printf("Enddiff : L %d ", encdiff);
                 break;
             }
             // strange value happens retrieve again.
@@ -643,7 +643,7 @@ void retrieveEncoder()
                 continue;
             }
         }
-        printf("Enddiff : L %d ", encdiff);
+        //printf("Enddiff : L %d ", encdiff);
         break;
     }
 
@@ -659,7 +659,7 @@ void retrieveEncoder()
         if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
         {
             //usleep( 15 * 1000 );
-            printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+            //printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
             usleep( 1000 );
             memset(&data_packet, 0, sizeof(data_packet));
             write(fdIRobot, buf, 2);
@@ -676,7 +676,7 @@ void retrieveEncoder()
             // except rollover
             if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
             {
-                printf("Enddiff : L %d ", encdiff);
+                //printf("Enddiff : L %d ", encdiff);
                 break;
             }
             // strange value happens retrieve again.
@@ -688,7 +688,7 @@ void retrieveEncoder()
                 continue;
             }
         }
-        printf("R %d\n", encdiff);
+        //printf("R %d\n", encdiff);
         
         break;
     }
