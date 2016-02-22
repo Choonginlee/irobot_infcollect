@@ -580,7 +580,7 @@ void retrieveEncoder()
         if(data_packet[0] == 19 && data_packet[1] == 6)
         {
             // checksum
-            if((data_packet[0]+data_packet[1]+data_packet[2]+data_packet[3]+data_packet[4]+data_packet[5]+data_packet[6]+data_packet[7]+data_packet[8]) != 256)
+            if((data_packet[0]+data_packet[1]+data_packet[2]+data_packet[3]+data_packet[4]+data_packet[5]+data_packet[6]+data_packet[7]+data_packet[8]) != 0xFF)
             {
                 memset(&data_packet, 0, sizeof(data_packet));
                 continue;
