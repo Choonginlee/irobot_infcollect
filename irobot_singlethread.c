@@ -624,7 +624,6 @@ void retrieveEncoder()
         leften = (data_packet[0] << 8) | data_packet[1];
         gettimeofday(&encLEndTime, NULL);
 
-        
         encdiff = leftenPrev - leften;
         //Quality assuarance
         if(leftenPrev != 0)
@@ -698,7 +697,7 @@ void retrieveEncoder()
 
     //*************************************************/
 
-    encLElapsedTime = ((double)(encREndTime.tv_sec)+(double)(encREndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+    encLElapsedTime = ((double)(encLEndTime.tv_sec)+(double)(encLEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
     encRElapsedTime = ((double)(encREndTime.tv_sec)+(double)(encREndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
     encLeftCnt = leften;
     encRightCnt = righten;
