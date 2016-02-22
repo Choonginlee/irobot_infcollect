@@ -525,11 +525,11 @@ void *receiveRecord(void *status)
         //printf("[+] Enter retrieveEncoder \n");
         retrieveEncoder();
         //printf("[+] Enter retrieveGyro \n");
-        retrieveGyro();
+        //retrieveGyro();
         imageCnt++;
         pgrImageNumber = imageCnt;
         //printf("[+] Enter retrieveImage \n");
-        retrieveImage();
+        //retrieveImage();
 
         // Record saved image info
         sprintf(writeLine, 
