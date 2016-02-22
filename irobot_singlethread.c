@@ -587,6 +587,7 @@ void retrieveEncoder()
             }
             leften = (data_packet[3] << 8) | data_packet[4];
             righten = (data_packet[6] << 8) | data_packet[7];
+            printf("checksum pass. recorded. %d %d \n", leften, righten);
 
             memset(&data_packet, 0, sizeof(data_packet));
             break;
