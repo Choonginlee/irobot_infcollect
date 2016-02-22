@@ -220,7 +220,7 @@ void drive()
         perror("[-] Thread create error : ");
         exit(0);
     }
-    /*
+    
     initscr();
     raw();
     noecho();
@@ -259,7 +259,7 @@ void drive()
                 continue;
         }
     }
-    */
+    
 }
 
 /*
