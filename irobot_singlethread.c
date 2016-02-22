@@ -606,7 +606,7 @@ void retrieveEncoder()
 
     ///********** Single Request ************** (METHOD 2)
 
-    //memset (&data_packet, '\0', sizeof(data_packet));
+    memset (&data_packet, '\0', sizeof(data_packet));
 
     buf[0] = Sensors;
     buf[1] = LeftEncoderCounts;
@@ -632,7 +632,8 @@ void retrieveEncoder()
             // except rollover
             if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
             {
-                // pass
+                printf("Enddiff : L %d ", encdiff);
+                break;
             }
             // strange value happens retrieve again.
             else if(encdiff > 200 || encdiff < -200)
@@ -676,7 +677,8 @@ void retrieveEncoder()
             // except rollover
             if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
             {
-                // pass
+                printf("Enddiff : L %d ", encdiff);
+                break;
             }
             // strange value happens retrieve again.
             else if(encdiff > 200 || encdiff < -200)
