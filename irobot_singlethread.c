@@ -606,7 +606,7 @@ void retrieveEncoder()
 
     ///********** Single Request ************** (METHOD 2)
 
-    memset (&data_packet, '\0', sizeof(data_packet));
+    tcflush(fdIRobot, TCIFLUSH);
 
     buf[0] = Sensors;
     buf[1] = LeftEncoderCounts;
@@ -654,7 +654,7 @@ void retrieveEncoder()
     leften = (data_packet[0] << 8) | data_packet[1];
     gettimeofday(&encLEndTime, NULL);
 
-    //memset (&data_packet, 0, sizeof(data_packet));
+    tcflush(fdIRobot, TCIFLUSH);
     //usleep( 1000 );
 
     buf[1] = RightEncoderCounts;
