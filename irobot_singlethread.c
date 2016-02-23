@@ -654,11 +654,10 @@ void retrieveEncoder()
 
     // leftenPrev = leften;
 
-
     read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
-    leften = (data_packet[0] << 8) | data_packet[1];
+    memcpy(&leften, data_packet, sizeof(short));
     gettimeofday(&encLEndTime, NULL);
-    printf("left hi : %x left low : %x\n", data_packet[0], data_packet[1]);
+    printf("left encoder : %x ", leften);
 
     tcflush(fdIRobot, TCIFLUSH);
     //usleep( 1000 );
@@ -667,9 +666,9 @@ void retrieveEncoder()
     write(fdIRobot, buf, 2);
 
     read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
-    righten = (data_packet[0] << 8) | data_packet[1];
+    memcpy(&leften, data_packet, sizeof(short));
     gettimeofday(&encREndTime, NULL);
-    printf("right hi : %x right low : %x\n\n", data_packet[0], data_packet[1]);
+    printf("right encoder : %x ", leften);
     
     // while(1)
     // {
@@ -911,7 +910,7 @@ int setGyro()
 
     if(fd < 0)
     {
-        printf("[-] Check the connection of Gyro consor.\n");
+        printf("[-] Check the connection of Gyro censor.\n");
         perror("/dev/ttyUSB0");
         exit(0);
     }
@@ -950,9 +949,7 @@ int setIRobot()
     }
 
     memset( &serialio, 0, sizeof(serialio) );
-    serialio.c_cflag = B115200;   // baud - 115200 
-
-    serialio.c_cflag &= ~CSIZE;
+    serialio.c_cflag = B19200;   // baud - 115200 
     serialio.c_cflag |= CS8;      // data bit - 8bit 
     serialio.c_cflag |= CLOCAL;   // use local comm port 
     serialio.c_cflag |= CREAD;    // read & write
@@ -961,7 +958,7 @@ int setIRobot()
     serialio.c_oflag = 0;
     serialio.c_lflag = 0;
     serialio.c_cc[VTIME] = 0; 
-    serialio.c_cc[VMIN] = 2; 
+    serialio.c_cc[VMIN] = 1;
 
     cfmakeraw(&serialio);
 
