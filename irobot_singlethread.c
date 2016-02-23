@@ -617,6 +617,8 @@ void retrieveEncoder()
     buf[1] = LeftEncoderCounts;
     write(fdIRobot, buf, 2);
 
+    printf("Sent Request -> ");
+
     // while(1)
     // {
     //     if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
@@ -668,7 +670,7 @@ void retrieveEncoder()
     read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
     memcpy(&leften, data_packet, sizeof(short));
     gettimeofday(&encREndTime, NULL);
-    printf("right encoder : %x ", leften);
+    printf("right encoder : %x \n", leften);
     
     // while(1)
     // {
