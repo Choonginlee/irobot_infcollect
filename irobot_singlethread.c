@@ -669,7 +669,7 @@ void retrieveEncoder()
     read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
     righten = (data_packet[0] << 8) | data_packet[1];
     gettimeofday(&encREndTime, NULL);
-    printf("right hi : %x right low : %x\n", data_packet[0], data_packet[1]);
+    printf("right hi : %x right low : %x\n\n", data_packet[0], data_packet[1]);
     
     // while(1)
     // {
