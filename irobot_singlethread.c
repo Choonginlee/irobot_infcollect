@@ -615,7 +615,7 @@ void retrieveEncoder()
 
     buf[0] = Sensors;
     buf[1] = LeftEncoderCounts;
-    write(fdIRobot, buf, 2);
+    //write(fdIRobot, buf, 2);
 
     printf("Sent Request -> ");
 
@@ -660,7 +660,7 @@ void retrieveEncoder()
     memcpy(&leften, data_packet, sizeof(short));
     gettimeofday(&encLEndTime, NULL);
     printf("left encoder : %x ", leften);
-
+    return;
     tcflush(fdIRobot, TCIFLUSH);
     //usleep( 1000 );
 
