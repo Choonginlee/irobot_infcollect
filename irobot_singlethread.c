@@ -609,47 +609,53 @@ void retrieveEncoder()
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
 	write(fdIRobot, buf, 2);
+    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS)
+    leften = (data_packet[0] << 8) | data_packet[1];
+    gettimeofday(&encLEndTime, NULL);
 
-	while(1)
-	{
-		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
-		{		
-			printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-			// usleep( 1000 );
-			// memset(&data_packet, 0, sizeof(data_packet));
-			// write(fdIRobot, buf, 2);
-			continue;
-		}
-		leften = (data_packet[0] << 8) | data_packet[1];
-		gettimeofday(&encLEndTime, NULL);
+	// while(1)
+	// {
+	// 	if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+	// 	{		
+	// 		printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+	// 		// usleep( 1000 );
+	// 		// memset(&data_packet, 0, sizeof(data_packet));
+	// 		// write(fdIRobot, buf, 2);
+	// 		continue;
+	// 	}
+	// 	leften = (data_packet[0] << 8) | data_packet[1];
+	// 	gettimeofday(&encLEndTime, NULL);
 
-	}
+	// }
 
-	leftenPrev = leften;
+	// leftenPrev = leften;
 
 	//memset (&data_packet, 0, sizeof(data_packet));
 	// usleep( 1000 );
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
-	
-	while(1)
-	{
-		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
-		{
-			//usleep( 15 * 1000 );
-			printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-			// usleep( 1000 );
-			// memset(&data_packet, 0, sizeof(data_packet));
-			// write(fdIRobot, buf, 2);
-			continue;
-		}
-		righten = (data_packet[0] << 8) | data_packet[1];
-		gettimeofday(&encREndTime, NULL);
+    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS)
+    righten = (data_packet[0] << 8) | data_packet[1];
+    gettimeofday(&encREndTime, NULL);
 
-		break;
-	}
+	// while(1)
+	// {
+	// 	if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+	// 	{
+	// 		//usleep( 15 * 1000 );
+	// 		printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+	// 		// usleep( 1000 );
+	// 		// memset(&data_packet, 0, sizeof(data_packet));
+	// 		// write(fdIRobot, buf, 2);
+	// 		continue;
+	// 	}
+	// 	righten = (data_packet[0] << 8) | data_packet[1];
+	// 	gettimeofday(&encREndTime, NULL);
 
-	rightenPrev = righten;
+	// 	break;
+	// }
+
+	// rightenPrev = righten;
 
 	//*************************************************/
 
