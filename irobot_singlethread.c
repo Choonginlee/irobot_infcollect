@@ -598,7 +598,7 @@ void retrieveEncoder()
 	*************************************************/
 
 	///********** Single Request ************** (METHOD 2)
-    usleep( 100 * 1000 );
+    // usleep( 100 * 1000 );
     while(1)
     {
         // get left encoder
@@ -610,6 +610,7 @@ void retrieveEncoder()
 
         if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
         {
+            usleep( 15 * 1000 );
             continue;
         }
         leften = (data_packet[0] << 8) | data_packet[1];
@@ -623,6 +624,7 @@ void retrieveEncoder()
 
         if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
         {
+            usleep( 15 * 1000 );
             continue;
         }
         righten = (data_packet[0] << 8) | data_packet[1];
