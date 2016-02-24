@@ -190,7 +190,7 @@ void start()
     write(fdIRobot, buf, 1);
     
     printf("[+] Please wait for iRobot to be stabilized..\n");
-    usleep( 4000 * 1000 );
+    usleep( 1000 * 1000 );
     
 }
 
@@ -773,6 +773,8 @@ fc2Context setPGR()
     fc2Error error;
     fc2Context context;
     fc2PGRGuid guid;
+    fc2VideoMode videomode;
+    fc2FrameRate framerate;
     unsigned int numCameras = 0;
 
     error = fc2CreateContext( &context );
@@ -819,6 +821,20 @@ fc2Context setPGR()
         exit(0);
     }
 
+    error = fc2SetVideoModeAndFrameRate( context, videomode.FC2_VIDEOMODE_640x480Y16, framerate.FC2_NUM_FRAMERATES );
+    if ( error != FC2_ERROR_OK )
+    {
+        printf( "[-] Error in fc2SetVideoModeAndFrameRate: %d\n", error );
+
+        // DestoryContext
+        error = fc2DestroyContext( context );
+        if ( error != FC2_ERROR_OK )
+        {
+            printf( "Error in fc2DestroyContext: %d\n", error );
+        }
+
+        exit(0);
+    }
     return context;
 }
 
