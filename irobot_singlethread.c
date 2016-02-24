@@ -598,7 +598,7 @@ void retrieveEncoder()
 	*************************************************/
 
 	///********** Single Request ************** (METHOD 2)
-    usleep( 100 * 1000 )
+    usleep( 100 * 1000 );
     while(1)
     {
         // get left encoder
