@@ -599,66 +599,37 @@ void retrieveEncoder()
 
 	///********** Single Request ************** (METHOD 2)
 
-	// flush serial buffer before request
-	//tcflush(fdIRobot, TCIFLUSH);
-	
-	//usleep( 15 * 1000 );
+    while(1)
+    {
+        // get left encoder
+        tcflush(fdIRobot, TCIFLUSH);
+        memset (&data_packet, 0, sizeof(data_packet));
+        buf[0] = Sensors;
+        buf[1] = LeftEncoderCounts;
+        write(fdIRobot, buf, 2);
 
-	//memset (&data_packet, '\0', sizeof(data_packet));
-    tcflush(fdIRobot, TCIFLUSH);
-    memset (&data_packet, 0, sizeof(data_packet));
-	buf[0] = Sensors;
-	buf[1] = LeftEncoderCounts;
-	write(fdIRobot, buf, 2);
-    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
-    leften = (data_packet[0] << 8) | data_packet[1];
-    gettimeofday(&encLEndTime, NULL);
+        if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+        {
+            continue;
+        }
+        leften = (data_packet[0] << 8) | data_packet[1];
+        gettimeofday(&encLEndTime, NULL);
 
-	// while(1)
-	// {
-	// 	if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
-	// 	{		
-	// 		printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-	// 		// usleep( 1000 );
-	// 		// memset(&data_packet, 0, sizeof(data_packet));
-	// 		// write(fdIRobot, buf, 2);
-	// 		continue;
-	// 	}
-	// 	leften = (data_packet[0] << 8) | data_packet[1];
-	// 	gettimeofday(&encLEndTime, NULL);
+        // get right encoder
+        tcflush(fdIRobot, TCIFLUSH);
+        memset (&data_packet, 0, sizeof(data_packet));
+        buf[1] = RightEncoderCounts;
+        write(fdIRobot, buf, 2);
 
-	// }
+        if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+        {
+            continue;
+        }
+        righten = (data_packet[0] << 8) | data_packet[1];
+        gettimeofday(&encREndTime, NULL);
 
-	// leftenPrev = leften;
-
-	//memset (&data_packet, 0, sizeof(data_packet));
-	// usleep( 1000 );
-    tcflush(fdIRobot, TCIFLUSH);
-    memset (&data_packet, 0, sizeof(data_packet));
-	buf[1] = RightEncoderCounts;
-	write(fdIRobot, buf, 2);
-    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
-    righten = (data_packet[0] << 8) | data_packet[1];
-    gettimeofday(&encREndTime, NULL);
-
-	// while(1)
-	// {
-	// 	if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
-	// 	{
-	// 		//usleep( 15 * 1000 );
-	// 		printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-	// 		// usleep( 1000 );
-	// 		// memset(&data_packet, 0, sizeof(data_packet));
-	// 		// write(fdIRobot, buf, 2);
-	// 		continue;
-	// 	}
-	// 	righten = (data_packet[0] << 8) | data_packet[1];
-	// 	gettimeofday(&encREndTime, NULL);
-
-	// 	break;
-	// }
-
-	// rightenPrev = righten;
+        break;
+    }
 
 	//*************************************************/
 
@@ -907,7 +878,7 @@ int setIRobot()
 	serialio.c_oflag = 0;
 	serialio.c_lflag = 0;
 	serialio.c_cc[VTIME] = 0; 
-	serialio.c_cc[VMIN] = 2; 
+	serialio.c_cc[VMIN] = 1; 
 
 	cfmakeraw(&serialio);
 
