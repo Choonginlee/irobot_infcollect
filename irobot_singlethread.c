@@ -821,10 +821,10 @@ fc2Context setPGR()
         exit(0);
     }
 
-    videomode = (fc2VideoMode)FC2_VIDEOMODE_640x480Y16;
-    framerate = (fc2FrameRate)FC2_NUM_FRAMERATES;
+    // videomode = (fc2VideoMode)FC2_VIDEOMODE_640x480Y16;
+    // framerate = (fc2FrameRate)FC2_NUM_FRAMERATES;
 
-    error = fc2SetVideoModeAndFrameRate( context, videomode, framerate );
+    error = fc2SetVideoModeAndFrameRate( context, (fc2VideoMode)FC2_VIDEOMODE_640x480Y16, (fc2FrameRate)FC2_NUM_FRAMERATES );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2SetVideoModeAndFrameRate: %d\n", error );
