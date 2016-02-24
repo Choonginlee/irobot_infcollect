@@ -824,20 +824,20 @@ fc2Context setPGR()
     // videomode = (fc2VideoMode)FC2_VIDEOMODE_640x480Y16;
     // framerate = (fc2FrameRate)FC2_NUM_FRAMERATES;
 
-    error = fc2SetVideoModeAndFrameRate( context, (fc2VideoMode)FC2_VIDEOMODE_640x480Y16, (fc2FrameRate)FC2_NUM_FRAMERATES );
-    if ( error != FC2_ERROR_OK )
-    {
-        printf( "[-] Error in fc2SetVideoModeAndFrameRate: %d\n", error );
+    // error = fc2SetVideoModeAndFrameRate( context, (fc2VideoMode)FC2_VIDEOMODE_640x480Y16, (fc2FrameRate)FC2_NUM_FRAMERATES );
+    // if ( error != FC2_ERROR_OK )
+    // {
+    //     printf( "[-] Error in fc2SetVideoModeAndFrameRate: %d\n", error );
 
-        // DestoryContext
-        error = fc2DestroyContext( context );
-        if ( error != FC2_ERROR_OK )
-        {
-            printf( "Error in fc2DestroyContext: %d\n", error );
-        }
+    //     // DestoryContext
+    //     error = fc2DestroyContext( context );
+    //     if ( error != FC2_ERROR_OK )
+    //     {
+    //         printf( "Error in fc2DestroyContext: %d\n", error );
+    //     }
 
-        exit(0);
-    }
+    //     exit(0);
+    // }
     return context;
 }
 
