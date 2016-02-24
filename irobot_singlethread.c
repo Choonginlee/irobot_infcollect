@@ -10,48 +10,49 @@
 #include <time.h>
 #include "/usr/include/flycapture/C/FlyCapture2_C.h"
 
-//				Create Command					// Arguments
-const char		Start = 128;
-const char		Stop = 173;
-const char 		Reset = 7;
-const char		SafeMode = 131;
-const char		FullMode = 132;
-const char		Clean = 135;
-const char		DriveDirect = 145;				// 4:   [Right Hi] [Right Low] [Left Hi] [Left Low]
-const char		Sensors = 142;					// 1:    Sensor Packet ID
-const char		SensorStream = 148;         // x+1: [# of packets requested] IDs of requested packets to stream
-const char		StreamPause = 150;
+//              Create Command                  // Arguments
+const char      Start = 128;
+const char      Stop = 173;
+const char      Reset = 7;
+const char      SafeMode = 131;
+const char      FullMode = 132;
+const char      Clean = 135;
+const char      DriveDirect = 145;              // 4:   [Right Hi] [Right Low] [Left Hi] [Left Low]
+const char      Sensors = 142;                  // 1:    Sensor Packet ID
+const char      SensorStream = 148;         // x+1: [# of packets requested] IDs of requested packets to stream
+const char      StreamPause = 150;
 
-//				iRobot Create 2 Packet IDs		//
-const char		LeftEncoderCounts = 43;
-const char		RightEncoderCounts = 44;
-const char		Distance = 19;
-const char		Angle = 20;
+//              iRobot Create 2 Packet IDs      //
+const char      LeftEncoderCounts = 43;
+const char      RightEncoderCounts = 44;
+const char      Distance = 19;
+const char      Angle = 20;
 
-const int		GYRO_PACKET_SIZE = 8; 			// gyro packet size
-const int		IROBOT_PACKET_SIZE_STREAM = 9;	// irobot packet size
-const int		IROBOT_PACKET_SIZE_SENSORS = 2;	// irobot packet size
-const float		MM_PER_COUNTER = 0.4446;		// mm travel per counter
-const int		COUNTER_PER_RANGLE = 410;		// counters per 90 angle
+const int       GYRO_PACKET_SIZE = 8;           // gyro packet size
+const int       IROBOT_PACKET_SIZE_STREAM = 9;  // irobot packet size
+const int       IROBOT_PACKET_SIZE_SENSORS = 2; // irobot packet size
+const float     MM_PER_COUNTER = 0.4446;        // mm travel per counter
+const int       COUNTER_PER_RANGLE = 410;       // counters per 90 angle
 
 // Global variable for system
 struct timeval startTime;
-int SPEED_LEFT =  100;							// slow speed in case of turning
-int SPEED_RIGHT = 100;							// slow speed in case of turning
-int SPEED_LEFT_STRAIGHT = 200;					// fast speed in case of straight
-int SPEED_RIGHT_STRAIGHT = 200;					// fast speed in case of straight
-/*typedef struct {								// structure for handlers (pgr, xg, irobot)
-	fc2Context context;
-	int fdGyro;
-	int fdIRobot;
-}Handlers;		*/
+int SPEED_LEFT =  100;                          // slow speed in case of turning
+int SPEED_RIGHT = 100;                          // slow speed in case of turning
+int SPEED_LEFT_STRAIGHT = 200;                  // fast speed in case of straight
+int SPEED_RIGHT_STRAIGHT = 200;                 // fast speed in case of straight
+int ROLLOVER_BOUNDARY = 65510;
+/*typedef struct {                              // structure for handlers (pgr, xg, irobot)
+    fc2Context context;
+    int fdGyro;
+    int fdIRobot;
+}Handlers;      */
 pthread_t p_thread;
 int thr_id;
 int status;
 
 fc2Context context;
 int fdGyro;
-int fdIRobot;							
+int fdIRobot;                           
 
 // Global variable for record
 float gyroElapsedTime;
@@ -62,8 +63,8 @@ unsigned short encLeftCnt;
 unsigned short encRightCnt;
 float pgrElapsedTime;
 int pgrImageNumber;
-unsigned short leftenPrev=0;		// this is for storing last value
-unsigned short rightenPrev=0;		// this is for storing last value
+unsigned short leftenPrev=0;        // this is for storing last value
+unsigned short rightenPrev=0;       // this is for storing last value
 
 void showInstruction();
 int rcvCommand();
@@ -76,11 +77,11 @@ int setIRobot();
 void drive();
 void zigzag(int length, int width, int req_num_length);
 
-void start();					// send start and safemode command
+void start();                   // send start and safemode command
 void reset();
 void clean();
-void quit();					// stop OI
-void pauseDrive();						// pauseDrive driving
+void quit();                    // stop OI
+void pauseDrive();                      // pauseDrive driving
 void forward();
 void reverse();
 void left();
@@ -102,106 +103,106 @@ main
 */
 void main()
 {
-	int cmdRcvd;
-	int length;
-	int width;
-	int numlength;
+    int cmdRcvd;
+    int length;
+    int width;
+    int numlength;
 
-	//Handlers handler;
-	context = setPGR();
-	fdGyro = setGyro();
-	fdIRobot = setIRobot();
-	showInstruction();
+    //Handlers handler;
+    context = setPGR();
+    fdGyro = setGyro();
+    fdIRobot = setIRobot();
+    showInstruction();
 
-	while(1)
-	{
-		cmdRcvd = rcvCommand();
+    while(1)
+    {
+        cmdRcvd = rcvCommand();
 
-		switch(cmdRcvd)
-		{
-			case 1:
-				start();
-				drive();
-				//pthread_exit((void *) 0);
-				quit(); // end process
-				break;
-			case 2:
-				start();
-				return;
-				printf("[Q] Please enter length / width / # of length : ");
-				scanf("%d %d %d", &length, &width, &numlength);
-				zigzag(length, width, numlength);
-				//pthread_exit((void *) 0);
-				quit(); // end process
-				break;
-			case 3:				
-				quit();
-				break;
-			case 4:
-				reset();
-				break;
-			case 5:
-				clean();
-				break;
-			case 6:
-				start();
-				break;
-			default:
-				printf("[-] Wrong input! Exit. : ");
-				return;
-		}
-	}
+        switch(cmdRcvd)
+        {
+            case 1:
+                start();
+                drive();
+                //pthread_exit((void *) 0);
+                quit(); // end process
+                break;
+            case 2:
+                start();
+                return;
+                printf("[Q] Please enter length / width / # of length : ");
+                scanf("%d %d %d", &length, &width, &numlength);
+                zigzag(length, width, numlength);
+                //pthread_exit((void *) 0);
+                quit(); // end process
+                break;
+            case 3:             
+                quit();
+                break;
+            case 4:
+                reset();
+                break;
+            case 5:
+                clean();
+                break;
+            case 6:
+                start();
+                break;
+            default:
+                printf("[-] Wrong input! Exit. : ");
+                return;
+        }
+    }
 
-	return;
+    return;
 }
 
 void showInstruction()
 {
-	printf("=========================================\n");
-	printf("1. Realtime drive\t--> Type 1\n");
-	printf("2. Zigzag\t\t--> Type 2\n");
-	printf("3. Quit and Clear camera\t-> Type 3\n");
-	printf("4. Reset robot system\t--> Type 4\n");
-	printf("5. Clean\t\t--> Type 5\n\n");
-	printf("[Info] Make sure you clear previous data by pressing 3 after emergency stop.\n");
-	printf("[Info] Please check connection status before start.\n");
-	printf("[Info] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
-	printf("=========================================\n");
+    printf("=========================================\n");
+    printf("1. Realtime drive\t--> Type 1\n");
+    printf("2. Zigzag\t\t--> Type 2\n");
+    printf("3. Quit and Clear camera\t-> Type 3\n");
+    printf("4. Reset robot system\t--> Type 4\n");
+    printf("5. Clean\t\t--> Type 5\n\n");
+    printf("[Info] Make sure you clear previous data by pressing 3 after emergency stop.\n");
+    printf("[Info] Please check connection status before start.\n");
+    printf("[Info] ttyUSB0 : Gyro (XG1010) | ttyUSB1 : iRobot Create 2\n");
+    printf("=========================================\n");
 }
 
 int rcvCommand()
 {
-	int command;
-	printf("Enter command : ");
-	scanf("%d", &command);
-	return command;
+    int command;
+    printf("Enter command : ");
+    scanf("%d", &command);
+    return command;
 }
 
 void start()
 {
-	
-	char buf[1];
-	
-	buf[0] = Start;
-	printf("[+] Start char. %x\n", buf[0]);
-	write(fdIRobot, buf, 1);
+    
+    char buf[1];
+    
+    buf[0] = Start;
+    printf("[+] Start char. %x\n", buf[0]);
+    write(fdIRobot, buf, 1);
 
-	buf[0] = FullMode;
-	printf("[+] FullMode char. %x\n", buf[0]);
-	write(fdIRobot, buf, 1);
-	
-	printf("[+] Please wait for iRobot to be stabilized..\n");
-	usleep( 4000 * 1000 );
-	
+    buf[0] = FullMode;
+    printf("[+] FullMode char. %x\n", buf[0]);
+    write(fdIRobot, buf, 1);
+    
+    printf("[+] Please wait for iRobot to be stabilized..\n");
+    usleep( 4000 * 1000 );
+    
 }
 
 void reset()
 {
-	char buf[1];
+    char buf[1];
 
-	buf[0] = Reset;
-	printf("[+] Send msg : %x (Reset robot) \n", buf[0]);
-	write(fdIRobot, buf, 1);
+    buf[0] = Reset;
+    printf("[+] Send msg : %x (Reset robot) \n", buf[0]);
+    write(fdIRobot, buf, 1);
 }
 
 /*
@@ -211,54 +212,60 @@ drive
 */
 void drive()
 {
-	//printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
-	char dir;
+    //printf("[+] gyro : %d irobot : %d\n", fdGyro, fdIRobot);
+    char dir;
 
-	thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)&status);
-	if(thr_id < 0)
-	{
-		perror("[-] Thread create error : ");
-		exit(0);
-	}
+    thr_id = pthread_create(&p_thread, NULL, receiveRecord, (void *)&status);
+    if(thr_id < 0)
+    {
+        perror("[-] Thread create error : ");
+        exit(0);
+    }
 
-	initscr();
-	raw();
-	noecho();
+    while(1)
+    {
 
-	while(1)
-	{
-	    dir = getch();
-	    //printf("[-] Input code : %c\n", dir);
+    }
+    
+    initscr();
+    raw();
+    noecho();
 
-	    switch(dir) { // the real value
-	        case 'A':
-	            // code for arrow up
-	        	forward();
-	            break;
-	        case 'B':
-	            // code for arrow down
-	        	reverse();
-	            break;
-	        case 'C':
-	            // code for arrow right
-	        	right();
-	            break;
-	        case 'D':
-	            // code for arrow left
-	        	left();
-	            break;
-	        case ' ':
-	        	// code for spacebar
-	        	pauseDrive();
-	        	break;
-	        case 0xA: 
-	        	// enter key
-	        	endwin();
-	        	return;
-	        default:
-	        	continue;
-		}
-	}
+    while(1)
+    {
+        dir = getch();
+        //printf("[-] Input code : %c\n", dir);
+
+        switch(dir) { // the real value
+            case 'A':
+                // code for arrow up
+                forward();
+                break;
+            case 'B':
+                // code for arrow down
+                reverse();
+                break;
+            case 'C':
+                // code for arrow right
+                right();
+                break;
+            case 'D':
+                // code for arrow left
+                left();
+                break;
+            case ' ':
+                // code for spacebar
+                pauseDrive();
+                break;
+            case 0xA: 
+                // enter key
+                endwin();
+                return;
+            default:
+                continue;
+        }
+    }
+    
 }
 
 /*
@@ -272,65 +279,65 @@ real-time driving commands
 
 void forward() 
 {
-	char buf[5];
+    char buf[5];
 
-	buf[0] = (char)(DriveDirect);
-	buf[1] = (char)((SPEED_RIGHT_STRAIGHT>>8)&0xFF);
-	buf[2] = (char)(SPEED_RIGHT_STRAIGHT&0xFF);
-	buf[3] = (char)((SPEED_LEFT_STRAIGHT>>8)&0xFF);
-	buf[4] = (char)(SPEED_LEFT_STRAIGHT&0xFF);
-	printf("[+] Send msg : (Forward straight)\n");
-	write(fdIRobot, buf, 5);
+    buf[0] = (char)(DriveDirect);
+    buf[1] = (char)((SPEED_RIGHT_STRAIGHT>>8)&0xFF);
+    buf[2] = (char)(SPEED_RIGHT_STRAIGHT&0xFF);
+    buf[3] = (char)((SPEED_LEFT_STRAIGHT>>8)&0xFF);
+    buf[4] = (char)(SPEED_LEFT_STRAIGHT&0xFF);
+    printf("[+] Send msg : (Forward straight)\n");
+    write(fdIRobot, buf, 5);
 }
 
 void reverse() 
 {
-	char buf[5];
+    char buf[5];
 
-	buf[0] = (char)(DriveDirect);
-	buf[1] = (char)(((-SPEED_RIGHT_STRAIGHT)>>8)&0xFF);
-	buf[2] = (char)((-SPEED_RIGHT_STRAIGHT)&0xFF);
-	buf[3] = (char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF);
-	buf[4] = (char)((-SPEED_LEFT_STRAIGHT)&0xFF);
-	printf("[+] Send msg : (Backward straight)\n");
-	write(fdIRobot, buf, 5);
+    buf[0] = (char)(DriveDirect);
+    buf[1] = (char)(((-SPEED_RIGHT_STRAIGHT)>>8)&0xFF);
+    buf[2] = (char)((-SPEED_RIGHT_STRAIGHT)&0xFF);
+    buf[3] = (char)(((-SPEED_LEFT_STRAIGHT)>>8)&0xFF);
+    buf[4] = (char)((-SPEED_LEFT_STRAIGHT)&0xFF);
+    printf("[+] Send msg : (Backward straight)\n");
+    write(fdIRobot, buf, 5);
 }
 
 void left()
 {
-	char buf[5];
+    char buf[5];
 
-	buf[0] = (char)(DriveDirect);
-	buf[1] = (char)((SPEED_RIGHT>>8)&0xFF);
-	buf[2] = (char)(SPEED_RIGHT&0xFF);
-	buf[3] = (char)(((-SPEED_LEFT)>>8)&0xFF);
-	buf[4] = (char)((-SPEED_LEFT)&0xFF);
-	printf("[+] Send msg : (Left)\n");
-	write(fdIRobot, buf, 5);
+    buf[0] = (char)(DriveDirect);
+    buf[1] = (char)((SPEED_RIGHT>>8)&0xFF);
+    buf[2] = (char)(SPEED_RIGHT&0xFF);
+    buf[3] = (char)(((-SPEED_LEFT)>>8)&0xFF);
+    buf[4] = (char)((-SPEED_LEFT)&0xFF);
+    printf("[+] Send msg : (Left)\n");
+    write(fdIRobot, buf, 5);
 }
 
 void right()
 {
-	char buf[5];
-	buf[0] = (char)(DriveDirect);
-	buf[1] = (char)(((-SPEED_RIGHT)>>8)&0xFF);
-	buf[2] = (char)((-SPEED_RIGHT)&0xFF);
-	buf[3] = (char)((SPEED_LEFT>>8)&0xFF);
-	buf[4] = (char)(SPEED_LEFT&0xFF);
-	printf("[+] Send msg : (Right)\n");
-	write(fdIRobot, buf, 5);
+    char buf[5];
+    buf[0] = (char)(DriveDirect);
+    buf[1] = (char)(((-SPEED_RIGHT)>>8)&0xFF);
+    buf[2] = (char)((-SPEED_RIGHT)&0xFF);
+    buf[3] = (char)((SPEED_LEFT>>8)&0xFF);
+    buf[4] = (char)(SPEED_LEFT&0xFF);
+    printf("[+] Send msg : (Right)\n");
+    write(fdIRobot, buf, 5);
 }
 
 void pauseDrive()
 {
-	char buf[5];
-	buf[0] = (char)(DriveDirect);
-	buf[1] = (char)(0);
-	buf[2] = (char)(0);
-	buf[3] = (char)(0);
-	buf[4] = (char)(0);
-	printf("[+] Send msg : (Pause Driving)\n");
-	write(fdIRobot, buf, 5);
+    char buf[5];
+    buf[0] = (char)(DriveDirect);
+    buf[1] = (char)(0);
+    buf[2] = (char)(0);
+    buf[3] = (char)(0);
+    buf[4] = (char)(0);
+    printf("[+] Send msg : (Pause Driving)\n");
+    write(fdIRobot, buf, 5);
 }
 
 /*
@@ -373,11 +380,11 @@ void rightAngle(int angle)
 
 void clean()
 {
-	char buf[1];
+    char buf[1];
 
-	buf[0] = Clean;
-	printf("Clean char. %d\n", buf[0]);
-	write(fdIRobot, buf, 1);
+    buf[0] = Clean;
+    printf("Clean char. %d\n", buf[0]);
+    write(fdIRobot, buf, 1);
 }
 
 /*
@@ -387,63 +394,63 @@ quit
 */
 void quit()
 {
-	fc2Error error;
-	int rc;
-	char buf_one[1];
-	char buf_two[2];
+    fc2Error error;
+    int rc;
+    char buf_one[1];
+    char buf_two[2];
 
-	// stop drive
-	pauseDrive();
+    // stop drive
+    pauseDrive();
 
- 	// pause stream
-	buf_two[0] = StreamPause;
-	buf_two[1] = 0;
-	printf("[+] Send msg : %d%d (Pause Stream)\n", buf_two[0], buf_two[1]);
-	write(fdIRobot, buf_two, 2);
+    // pause stream
+    buf_two[0] = StreamPause;
+    buf_two[1] = 0;
+    printf("[+] Send msg : %d%d (Pause Stream)\n", buf_two[0], buf_two[1]);
+    write(fdIRobot, buf_two, 2);
 
-	// stop OI
-	buf_one[0] = Stop;
-	printf("[+] Send msg : %d (Stop OI) \n", buf_one[0]);
-	write(fdIRobot, buf_one, 1);
+    // stop OI
+    buf_one[0] = Stop;
+    printf("[+] Send msg : %d (Stop OI) \n", buf_one[0]);
+    write(fdIRobot, buf_one, 1);
 
-	printf("[+] iRobot working clear..\n");
+    printf("[+] iRobot working clear..\n");
 
-	// Stop capture
+    // Stop capture
     error = fc2StopCapture( context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2StopCapture: %d\n", error );
     }
 
-	// Disconnect
+    // Disconnect
     error = fc2Disconnect( context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2Disconnect: %d\n", error );
     }
 
-	// DestoryContext
+    // DestoryContext
     error = fc2DestroyContext( context );
     if ( error != FC2_ERROR_OK )
     {
         //printf( "Error in fc2DestroyContext: %d\n", error );
     }
 
-	printf("[+] PGR Camera working clear..\n");
+    printf("[+] PGR Camera working clear..\n");
 
-	close(fdIRobot);
-	close(fdGyro);
-	printf("[+] Serial working clear..\n");
+    close(fdIRobot);
+    close(fdGyro);
+    printf("[+] Serial working clear..\n");
 
-	/*
-	rc = pthread_join(p_thread, (void **)&status);
-	if(rc == 0)
-	{
-		printf("[+] Recording thread clear..\n");
-	}
-	*/
+    /*
+    rc = pthread_join(p_thread, (void **)&status);
+    if(rc == 0)
+    {
+        printf("[+] Recording thread clear..\n");
+    }
+    */
 
-	printf("=====   GOOD BYE   =====\n");
+    printf("=====   GOOD BYE   =====\n");
 
     exit(0);
 }
@@ -452,16 +459,16 @@ void quit()
 /*
 receiveRecord
 = Thread for record info from 3 devices
-- Retrieve Enc 		[1]
-- Retrieve Gyro		[2]
-- Retrieve Image 	[3]
+- Retrieve Enc      [1]
+- Retrieve Gyro     [2]
+- Retrieve Image    [3]
 - Record [1-3]
 - Retrieval method records data on global variable
 */
 void *receiveRecord(void *status)
 {
-	fc2Error error;
-	char buf[4];
+    fc2Error error;
+    char buf[4];
     char filePath[10];
     char writeLine[100];
     int fdTxt; // file descriptor for writing file
@@ -469,11 +476,11 @@ void *receiveRecord(void *status)
 
     // ready for writing 
     fdTxt = open("./result/result.txt", O_WRONLY | O_CREAT, 0644);
-	if(fdTxt < 0)
-	{
-		perror("./result/pgr.txt");
-		exit(0);
-	}
+    if(fdTxt < 0)
+    {
+        perror("./result/pgr.txt");
+        exit(0);
+    }
     sprintf(writeLine, "TimeImg\tImage #\tTimeGyro\tdegree\tTimeLnc\tleftEnc\tTimeREnc\trightEnc\n");
     write(fdTxt, writeLine, strlen(writeLine));
 
@@ -482,19 +489,19 @@ void *receiveRecord(void *status)
     {
         printf( "[-] Error in fc2StartCapture: %d\n", error );
 
-    	// Disconnect
-	    error = fc2Disconnect( context );
-	    if ( error != FC2_ERROR_OK )
-	    {
-	        printf( "[-] Error in fc2Disconnect: %d\n", error );
-	    }
+        // Disconnect
+        error = fc2Disconnect( context );
+        if ( error != FC2_ERROR_OK )
+        {
+            printf( "[-] Error in fc2Disconnect: %d\n", error );
+        }
 
-		// DestoryContext
-	    error = fc2DestroyContext( context );
-	    if ( error != FC2_ERROR_OK )
-	    {
-	        printf( "[-] Error in fc2DestroyContext: %d\n", error );
-	    }
+        // DestoryContext
+        error = fc2DestroyContext( context );
+        if ( error != FC2_ERROR_OK )
+        {
+            printf( "[-] Error in fc2DestroyContext: %d\n", error );
+        }
 
         exit(0);
     }
@@ -506,36 +513,36 @@ void *receiveRecord(void *status)
 
     printf("[+] Start Recording..\n");
 
-	/********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
-	// request censor stream for two bytes (LeftCnt / RightCnt)
-	buf[0] = (char)(SensorStream);
-	buf[1] = (char)(2);
-	buf[2] = (char)(LeftEncoderCounts);
-	buf[3] = (char)(RightEncoderCounts);
-	write(fdIRobot, buf, 4);
+    /********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+    // request censor stream for two bytes (LeftCnt / RightCnt)
+    buf[0] = (char)(SensorStream);
+    buf[1] = (char)(2);
+    buf[2] = (char)(LeftEncoderCounts);
+    buf[3] = (char)(RightEncoderCounts);
+    write(fdIRobot, buf, 4);
 
-	printf("[+] Sent request SensorStream\n");
-	*************************************************/
+    printf("[+] Sent request SensorStream\n");
+    //*************************************************/
 
     // Start Recording
     while(1)
     {
-    	//printf("[+] Enter retrieveEncoder \n");
-    	retrieveEncoder();
-    	//printf("[+] Enter retrieveGyro \n");
-    	retrieveGyro();
-   		imageCnt++;
-   		pgrImageNumber = imageCnt;
-    	//printf("[+] Enter retrieveImage \n");
-    	retrieveImage();
+        //printf("[+] Enter retrieveEncoder \n");
+        retrieveEncoder();
+        //printf("[+] Enter retrieveGyro \n");
+        //retrieveGyro();
+        imageCnt++;
+        pgrImageNumber = imageCnt;
+        //printf("[+] Enter retrieveImage \n");
+        //retrieveImage();
 
-		// Record saved image info
+        // Record saved image info
         sprintf(writeLine, 
-        	"%.4f, %d, %.4f, %d, %.4f, %u, %.4f, %u\n", 
-        	pgrElapsedTime, pgrImageNumber,				// record pgr data capture
-        	gyroElapsedTime, gyroAngleData,				// record gyro data capture
-        	encLElapsedTime, encLeftCnt, 				// record irobot data capture
-        	encRElapsedTime, encRightCnt);				// record irobot data capture
+            "%.4f, %d, %.4f, %d, %.4f, %u, %.4f, %u\n", 
+            pgrElapsedTime, pgrImageNumber,             // record pgr data capture
+            gyroElapsedTime, gyroAngleData,             // record gyro data capture
+            encLElapsedTime, encLeftCnt,                // record irobot data capture
+            encRElapsedTime, encRightCnt);              // record irobot data capture
         write(fdTxt, writeLine, strlen(writeLine));
     }
 
@@ -543,6 +550,7 @@ void *receiveRecord(void *status)
 
 void retrieveEncoder()
 {
+<<<<<<< HEAD
 	char buf[2];
 	unsigned short leften;
 	unsigned short righten;
@@ -659,67 +667,240 @@ void retrieveEncoder()
 	encRightCnt = righten;
 
 	return;
+=======
+    char buf[2];
+    unsigned short leften;
+    unsigned short righten;
+    int encdiff;
+    struct timeval encLEndTime;
+    struct timeval encREndTime;
+    /********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+    unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
+    *************************************************/
+
+    ///********** Stream pause / resume ************** (METHOD 2. Occasional invalid packets)
+    unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
+    //*************************************************/
+
+    /********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
+    //buf[0] = (char)(StreamPause);
+    //buf[1] = (char)(1);
+    //write(fdIRobot, buf, 2);
+    leften = 0;
+    righten = 0;
+
+    while(1)
+    {
+        // The data received should be 9 bytes
+        // [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
+        // [19][6][43][xxxx][44][xxxx][xxx]
+        if(IROBOT_PACKET_SIZE_STREAM != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_STREAM))
+        {
+            memset(&data_packet, 0, sizeof(data_packet));
+            continue;
+        }
+
+        // 9 bytes detected. check header and bytes
+        if(data_packet[0] == 19 && data_packet[1] == 6)
+        {
+            printf("[+] Header and byte check pass.\n");
+            // checksum
+            if((data_packet[0]+data_packet[1]+data_packet[2]+data_packet[3]+data_packet[4]+data_packet[5]+data_packet[6]+data_packet[7]+data_packet[8]) != 0)
+            {
+                memset(&data_packet, 0, sizeof(data_packet));
+                continue;
+            }
+            leften = (data_packet[3] << 8) | data_packet[4];
+            righten = (data_packet[6] << 8) | data_packet[7];
+            printf("[++] checksum pass. recorded. %d %d \n", leften, righten);
+
+            memset(&data_packet, 0, sizeof(data_packet));
+            break;
+        }
+        memset(&data_packet, 0, sizeof(data_packet));
+    }
+    gettimeofday(&encREndTime, NULL);
+
+    //buf[0] = (char)(StreamPause);
+    //buf[1] = (char)(0);
+    //write(fdIRobot, buf, 2);
+    
+    *************************************************/
+
+    ///********** Single Request ************** (METHOD 2)
+
+    tcflush(fdIRobot, TCIFLUSH);
+
+    buf[0] = Sensors;
+    buf[1] = LeftEncoderCounts;
+    //write(fdIRobot, buf, 2);
+
+    printf("Sent Request -> ");
+
+    // while(1)
+    // {
+    //     if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+    //     {       
+    //         //printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+    //         memset(&data_packet, 0, sizeof(data_packet));
+    //         write(fdIRobot, buf, 2);
+    //         continue;
+    //     }
+    //     leften = (data_packet[0] << 8) | data_packet[1];
+    //     gettimeofday(&encLEndTime, NULL);
+
+    //     encdiff = leftenPrev - leften;
+    //     //Quality assuarance
+    //     if(leftenPrev != 0)
+    //     {
+    //         // except rollover
+    //         if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
+    //         {
+    //             //printf("Enddiff : L %d ", encdiff);
+    //             break;
+    //         }
+    //         // strange value happens retrieve again.
+    //         else if(encdiff > 200 || encdiff < -200)
+    //         {
+    //             usleep( 1000 );
+    //             memset(&data_packet, 0, sizeof(data_packet));
+    //             write(fdIRobot, buf, 2);
+    //             continue;
+    //         }
+    //     }
+    //     //printf("Enddiff : L %d ", encdiff);
+    //     break;
+    // }
+
+    // leftenPrev = leften;
+
+    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
+    memcpy(&leften, data_packet, sizeof(short));
+    gettimeofday(&encLEndTime, NULL);
+    printf("left encoder : %x ", leften);
+    return;
+    tcflush(fdIRobot, TCIFLUSH);
+    //usleep( 1000 );
+
+    buf[1] = RightEncoderCounts;
+    write(fdIRobot, buf, 2);
+
+    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
+    memcpy(&leften, data_packet, sizeof(short));
+    gettimeofday(&encREndTime, NULL);
+    printf("right encoder : %x \n", leften);
+    
+    // while(1)
+    // {
+    //     if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
+    //     {
+    //         //usleep( 15 * 1000 );
+    //         //printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
+    //         usleep( 1000 );
+    //         memset(&data_packet, 0, sizeof(data_packet));
+    //         write(fdIRobot, buf, 2);
+    //         continue;
+    //     }
+    //     righten = (data_packet[0] << 8) | data_packet[1];
+    //     gettimeofday(&encREndTime, NULL);
+
+        
+    //     encdiff = rightenPrev - righten;
+    //     //Quality assuarance
+    //     if(rightenPrev != 0)
+    //     {
+    //         // except rollover
+    //         if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
+    //         {
+    //             //printf("Enddiff : L %d ", encdiff);
+    //             break;
+    //         }
+    //         // strange value happens retrieve again.
+    //         else if(encdiff > 200 || encdiff < -200)
+    //         {
+    //             usleep( 1000 );
+    //             memset(&data_packet, 0, sizeof(data_packet));
+    //             write(fdIRobot, buf, 2);
+    //             continue;
+    //         }
+    //     }
+    //     //printf("R %d\n", encdiff);
+        
+    //     break;
+    // }
+
+    // rightenPrev = righten;
+
+    //*************************************************/
+
+    encLElapsedTime = ((double)(encLEndTime.tv_sec)+(double)(encLEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+    encRElapsedTime = ((double)(encREndTime.tv_sec)+(double)(encREndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+    encLeftCnt = leften;
+    encRightCnt = righten;
+
+    return;
+>>>>>>> master
 }
 
 void retrieveGyro()
 {
-	short header;
-	short rate_int;
-	short angle_int;
-	float rate_float;
-	float angle_float;
-	short check_sum;
-	struct timeval gyroEndTime;
-	unsigned char data_packet[GYRO_PACKET_SIZE];
+    short header;
+    short rate_int;
+    short angle_int;
+    float rate_float;
+    float angle_float;
+    short check_sum;
+    struct timeval gyroEndTime;
+    unsigned char data_packet[GYRO_PACKET_SIZE];
 
-	// flush serial buffer before request
-	tcflush(fdGyro, TCIFLUSH);
+    // flush serial buffer before request
+    tcflush(fdGyro, TCIFLUSH);
 
-	//printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
+    //printf("[+] gyro : %d irobot : %d\n", handler->fdGyro, handler->fdIRobot);
 
-	while(1)
-	{
-		if(GYRO_PACKET_SIZE != read(fdGyro, data_packet, GYRO_PACKET_SIZE))
-		{
-			continue;
-		}
+    while(1)
+    {
+        if(GYRO_PACKET_SIZE != read(fdGyro, data_packet, GYRO_PACKET_SIZE))
+        {
+            continue;
+        }
 
-		// Verify data packet header 
-		memcpy(&header, data_packet, sizeof(short));
-		if(header != (short)0xFFFF)
-		{
-			continue;
-		}
+        // Verify data packet header 
+        memcpy(&header, data_packet, sizeof(short));
+        if(header != (short)0xFFFF)
+        {
+            continue;
+        }
 
-		// Copy values from data string 
-		memcpy(&rate_int, data_packet+2, sizeof(short));
-		memcpy(&angle_int, data_packet+4, sizeof(short));
-		memcpy(&check_sum, data_packet+6, sizeof(short));
+        // Copy values from data string 
+        memcpy(&rate_int, data_packet+2, sizeof(short));
+        memcpy(&angle_int, data_packet+4, sizeof(short));
+        memcpy(&check_sum, data_packet+6, sizeof(short));
 
-		// Verify checksum
-		if(check_sum != (short)(0xFFFF + rate_int + angle_int))
-		{
-			continue;
-		}
+        // Verify checksum
+        if(check_sum != (short)(0xFFFF + rate_int + angle_int))
+        {
+            continue;
+        }
 
-		gettimeofday(&gyroEndTime, NULL);
+        gettimeofday(&gyroEndTime, NULL);
 
-		gyroElapsedTime = ((double)(gyroEndTime.tv_sec)+(double)(gyroEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
-	 	gyroAngleData = angle_int; // degree * 100 is angle_int
+        gyroElapsedTime = ((double)(gyroEndTime.tv_sec)+(double)(gyroEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
+        gyroAngleData = angle_int; // degree * 100 is angle_int
 
-	 	return;
-	}
+        return;
+    }
 }
 
 void retrieveImage()
 {
-	char filePath[10];
-	fc2Error error;
+    char filePath[10];
+    fc2Error error;
     fc2Image rawImage;
     fc2Image convertedImage;
-	struct timeval pgrEndTime;
+    struct timeval pgrEndTime;
 
-	error = fc2CreateImage( &rawImage );
+    error = fc2CreateImage( &rawImage );
     if ( error != FC2_ERROR_OK )
     {
         printf( "[-] Error in fc2CreateImage: %d\n", error );
@@ -733,8 +914,8 @@ void retrieveImage()
         quit();
     }
 
-	gettimeofday(&pgrEndTime, NULL);
-	
+    gettimeofday(&pgrEndTime, NULL);
+    
     // Retrieve the image
     error = fc2RetrieveBuffer( context, &rawImage );
     if ( error != FC2_ERROR_OK )
@@ -744,25 +925,25 @@ void retrieveImage()
     }
 
     else if ( error == FC2_ERROR_OK )
-	{
+    {
         // Convert the final image to RGB
         error = fc2ConvertImageTo(FC2_PIXEL_FORMAT_BGR, &rawImage, &convertedImage);
         if ( error != FC2_ERROR_OK )
         {
             printf( "[-] Error in fc2ConvertImageTo: %d\n", error );
-        	quit();
+            quit();
         }
 
         // Save it to jpeg
         sprintf(filePath, "./result/%d.jpeg", pgrImageNumber);
 
-		error = fc2SaveImage( &convertedImage, filePath, FC2_JPEG );
-		if ( error != FC2_ERROR_OK )
-		{
-			printf( "[-] Error in saving image %d.jpeg: %d\n", pgrImageNumber, error );
-			printf( "[-] Please check write permissions.\n");
-        	quit();
-		}
+        error = fc2SaveImage( &convertedImage, filePath, FC2_JPEG );
+        if ( error != FC2_ERROR_OK )
+        {
+            printf( "[-] Error in saving image %d.jpeg: %d\n", pgrImageNumber, error );
+            printf( "[-] Please check write permissions.\n");
+            quit();
+        }
     }
 
     error = fc2DestroyImage( &rawImage );
@@ -790,7 +971,7 @@ set PGR / XG / IROBOT
 
 fc2Context setPGR()
 {
-	fc2Error error;
+    fc2Error error;
     fc2Context context;
     fc2PGRGuid guid;
     unsigned int numCameras = 0;
@@ -829,53 +1010,54 @@ fc2Context setPGR()
     {
         printf( "[-] Error in fc2Connect: %d\n", error );
 
-    	// DestoryContext
-	    error = fc2DestroyContext( context );
-	    if ( error != FC2_ERROR_OK )
-	    {
-	        printf( "Error in fc2DestroyContext: %d\n", error );
-	    }
+        // DestoryContext
+        error = fc2DestroyContext( context );
+        if ( error != FC2_ERROR_OK )
+        {
+            printf( "Error in fc2DestroyContext: %d\n", error );
+        }
 
         exit(0);
     }
 
-	return context;
+    return context;
 }
 
 int setGyro()
 {
-	int fd;
-	struct termios serialio;
-	fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK);
+    int fd;
+    struct termios serialio;
+    fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK);
 
-	if(fd < 0)
-	{
-		printf("[-] Check the connection of Gyro consor.\n");
-		perror("/dev/ttyUSB0");
-		exit(0);
-	}
+    if(fd < 0)
+    {
+        printf("[-] Check the connection of Gyro censor.\n");
+        perror("/dev/ttyUSB0");
+        exit(0);
+    }
 
-	memset( &serialio, 0, sizeof(serialio) );
-	serialio.c_cflag = B115200;   // baud - 115200 
-	serialio.c_cflag |= CS8;      // data bit - 8bit 
-	serialio.c_cflag |= CLOCAL;   // use local comm port 
-	serialio.c_cflag |= CREAD;    // read & write
-	serialio.c_iflag = 0;         // no parity bit
-	serialio.c_oflag = 0;
-	serialio.c_lflag = 0;
-	serialio.c_cc[VTIME] = 0; 
-	serialio.c_cc[VMIN] = 1; 
+    memset( &serialio, 0, sizeof(serialio) );
+    serialio.c_cflag = B115200;   // baud - 115200 
+    serialio.c_cflag |= CS8;      // data bit - 8bit 
+    serialio.c_cflag |= CLOCAL;   // use local comm port 
+    serialio.c_cflag |= CREAD;    // read & write
+    serialio.c_iflag = 0;         // no parity bit
+    serialio.c_oflag = 0;
+    serialio.c_lflag = 0;
+    serialio.c_cc[VTIME] = 0; 
+    serialio.c_cc[VMIN] = 1; 
 
-	cfmakeraw(&serialio);
+    cfmakeraw(&serialio);
 
-	tcflush (fd, TCIFLUSH ); 			// flush mode mline
-	tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
+    tcflush (fd, TCIFLUSH );            // flush mode mline
+    tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
 
-	return fd;
+    return fd;
 }
 
 int setIRobot()
 {
+<<<<<<< HEAD
 	int fd;
 
 	struct termios serialio;
@@ -906,5 +1088,37 @@ int setIRobot()
 	tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
 
 	return fd;
+=======
+    int fd;
+
+    struct termios serialio;
+    fd = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY);
+
+    if(fd < 0)
+    {
+        printf("[-] Check the connection of iRobot.\n");
+        perror("/dev/ttyUSB1");
+        exit(0);
+    }
+
+    memset( &serialio, 0, sizeof(serialio) );
+    serialio.c_cflag = B19200;   // baud - 115200 
+    serialio.c_cflag |= CS8;      // data bit - 8bit 
+    serialio.c_cflag |= CLOCAL;   // use local comm port 
+    serialio.c_cflag |= CREAD;    // read & write
+    serialio.c_cflag &= ~CSTOPB;
+    serialio.c_iflag = 0;         // no parity bit
+    serialio.c_oflag = 0;
+    serialio.c_lflag = 0;
+    serialio.c_cc[VTIME] = 0; 
+    serialio.c_cc[VMIN] = 1;
+
+    cfmakeraw(&serialio);
+
+    tcflush (fd, TCIFLUSH );            // flush mode mline
+    tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
+
+    return fd;
+>>>>>>> master
 }
 

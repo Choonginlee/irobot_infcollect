@@ -98,8 +98,8 @@ int setIRobot()
 	serialio.c_iflag = 0;         // no parity bit
 	serialio.c_oflag = 0;
 	serialio.c_lflag = 0;
-	serialio.c_cc[VTIME] = 0; 
-	serialio.c_cc[VMIN] = 1; 
+	serialio.c_cc[VTIME] = 1; 
+	serialio.c_cc[VMIN] = 8; 
 	tcflush (fd, TCIFLUSH ); 			// flush mode mline
 	tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
 
@@ -126,6 +126,7 @@ void streamData(int fd)
 		if(IROBOT_PACKET_SIZE_STREAM != read(fd, data_packet, IROBOT_PACKET_SIZE_STREAM))
 		{
 			//printf("Not valid packet size\n");
+			memset(&data_packet, 0, sizeof(data_packet));
 			continue;
 		}
 
@@ -140,6 +141,7 @@ void streamData(int fd)
 			// check packet ID 1
 			if(data_packet[2] != 43 || data_packet[5] != 44)
 			{
+				memset(&data_packet, 0, sizeof(data_packet));
 				continue;
 			}
 			//leften = (data_packet[3] << 8) | data_packet[4];
@@ -147,6 +149,8 @@ void streamData(int fd)
 
 			printf("[%d] Data received\n", ++cnt);
 		}
+
+		memset(&data_packet, 0, sizeof(data_packet));
 	}
 }
 
