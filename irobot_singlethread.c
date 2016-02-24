@@ -550,7 +550,6 @@ void *receiveRecord(void *status)
 
 void retrieveEncoder()
 {
-<<<<<<< HEAD
 	char buf[2];
 	unsigned short leften;
 	unsigned short righten;
@@ -667,179 +666,6 @@ void retrieveEncoder()
 	encRightCnt = righten;
 
 	return;
-=======
-    char buf[2];
-    unsigned short leften;
-    unsigned short righten;
-    int encdiff;
-    struct timeval encLEndTime;
-    struct timeval encREndTime;
-    /********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
-    unsigned char data_packet[IROBOT_PACKET_SIZE_STREAM];
-    *************************************************/
-
-    ///********** Stream pause / resume ************** (METHOD 2. Occasional invalid packets)
-    unsigned char data_packet[IROBOT_PACKET_SIZE_SENSORS];
-    //*************************************************/
-
-    /********** Stream pause / resume ************** (METHOD 1. TOO SLOW)
-    //buf[0] = (char)(StreamPause);
-    //buf[1] = (char)(1);
-    //write(fdIRobot, buf, 2);
-    leften = 0;
-    righten = 0;
-
-    while(1)
-    {
-        // The data received should be 9 bytes
-        // [1 hdr][1 nbytes][1 pktID1][2 rcvdata][1 pktID2][2 rcvdata][1 chksum]
-        // [19][6][43][xxxx][44][xxxx][xxx]
-        if(IROBOT_PACKET_SIZE_STREAM != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_STREAM))
-        {
-            memset(&data_packet, 0, sizeof(data_packet));
-            continue;
-        }
-
-        // 9 bytes detected. check header and bytes
-        if(data_packet[0] == 19 && data_packet[1] == 6)
-        {
-            printf("[+] Header and byte check pass.\n");
-            // checksum
-            if((data_packet[0]+data_packet[1]+data_packet[2]+data_packet[3]+data_packet[4]+data_packet[5]+data_packet[6]+data_packet[7]+data_packet[8]) != 0)
-            {
-                memset(&data_packet, 0, sizeof(data_packet));
-                continue;
-            }
-            leften = (data_packet[3] << 8) | data_packet[4];
-            righten = (data_packet[6] << 8) | data_packet[7];
-            printf("[++] checksum pass. recorded. %d %d \n", leften, righten);
-
-            memset(&data_packet, 0, sizeof(data_packet));
-            break;
-        }
-        memset(&data_packet, 0, sizeof(data_packet));
-    }
-    gettimeofday(&encREndTime, NULL);
-
-    //buf[0] = (char)(StreamPause);
-    //buf[1] = (char)(0);
-    //write(fdIRobot, buf, 2);
-    
-    *************************************************/
-
-    ///********** Single Request ************** (METHOD 2)
-
-    tcflush(fdIRobot, TCIFLUSH);
-
-    buf[0] = Sensors;
-    buf[1] = LeftEncoderCounts;
-    //write(fdIRobot, buf, 2);
-
-    printf("Sent Request -> ");
-
-    // while(1)
-    // {
-    //     if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
-    //     {       
-    //         //printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-    //         memset(&data_packet, 0, sizeof(data_packet));
-    //         write(fdIRobot, buf, 2);
-    //         continue;
-    //     }
-    //     leften = (data_packet[0] << 8) | data_packet[1];
-    //     gettimeofday(&encLEndTime, NULL);
-
-    //     encdiff = leftenPrev - leften;
-    //     //Quality assuarance
-    //     if(leftenPrev != 0)
-    //     {
-    //         // except rollover
-    //         if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
-    //         {
-    //             //printf("Enddiff : L %d ", encdiff);
-    //             break;
-    //         }
-    //         // strange value happens retrieve again.
-    //         else if(encdiff > 200 || encdiff < -200)
-    //         {
-    //             usleep( 1000 );
-    //             memset(&data_packet, 0, sizeof(data_packet));
-    //             write(fdIRobot, buf, 2);
-    //             continue;
-    //         }
-    //     }
-    //     //printf("Enddiff : L %d ", encdiff);
-    //     break;
-    // }
-
-    // leftenPrev = leften;
-
-    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
-    memcpy(&leften, data_packet, sizeof(short));
-    gettimeofday(&encLEndTime, NULL);
-    printf("left encoder : %x ", leften);
-    return;
-    tcflush(fdIRobot, TCIFLUSH);
-    //usleep( 1000 );
-
-    buf[1] = RightEncoderCounts;
-    write(fdIRobot, buf, 2);
-
-    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
-    memcpy(&leften, data_packet, sizeof(short));
-    gettimeofday(&encREndTime, NULL);
-    printf("right encoder : %x \n", leften);
-    
-    // while(1)
-    // {
-    //     if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
-    //     {
-    //         //usleep( 15 * 1000 );
-    //         //printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-    //         usleep( 1000 );
-    //         memset(&data_packet, 0, sizeof(data_packet));
-    //         write(fdIRobot, buf, 2);
-    //         continue;
-    //     }
-    //     righten = (data_packet[0] << 8) | data_packet[1];
-    //     gettimeofday(&encREndTime, NULL);
-
-        
-    //     encdiff = rightenPrev - righten;
-    //     //Quality assuarance
-    //     if(rightenPrev != 0)
-    //     {
-    //         // except rollover
-    //         if(encdiff < -ROLLOVER_BOUNDARY || encdiff > ROLLOVER_BOUNDARY)
-    //         {
-    //             //printf("Enddiff : L %d ", encdiff);
-    //             break;
-    //         }
-    //         // strange value happens retrieve again.
-    //         else if(encdiff > 200 || encdiff < -200)
-    //         {
-    //             usleep( 1000 );
-    //             memset(&data_packet, 0, sizeof(data_packet));
-    //             write(fdIRobot, buf, 2);
-    //             continue;
-    //         }
-    //     }
-    //     //printf("R %d\n", encdiff);
-        
-    //     break;
-    // }
-
-    // rightenPrev = righten;
-
-    //*************************************************/
-
-    encLElapsedTime = ((double)(encLEndTime.tv_sec)+(double)(encLEndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
-    encRElapsedTime = ((double)(encREndTime.tv_sec)+(double)(encREndTime.tv_usec)/1000000.0) - ((double)(startTime.tv_sec)+(double)(startTime.tv_usec)/1000000.0);
-    encLeftCnt = leften;
-    encRightCnt = righten;
-
-    return;
->>>>>>> master
 }
 
 void retrieveGyro()
@@ -1057,7 +883,6 @@ int setGyro()
 
 int setIRobot()
 {
-<<<<<<< HEAD
 	int fd;
 
 	struct termios serialio;
@@ -1088,37 +913,5 @@ int setIRobot()
 	tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
 
 	return fd;
-=======
-    int fd;
-
-    struct termios serialio;
-    fd = open("/dev/ttyUSB1", O_RDWR | O_NOCTTY);
-
-    if(fd < 0)
-    {
-        printf("[-] Check the connection of iRobot.\n");
-        perror("/dev/ttyUSB1");
-        exit(0);
-    }
-
-    memset( &serialio, 0, sizeof(serialio) );
-    serialio.c_cflag = B19200;   // baud - 115200 
-    serialio.c_cflag |= CS8;      // data bit - 8bit 
-    serialio.c_cflag |= CLOCAL;   // use local comm port 
-    serialio.c_cflag |= CREAD;    // read & write
-    serialio.c_cflag &= ~CSTOPB;
-    serialio.c_iflag = 0;         // no parity bit
-    serialio.c_oflag = 0;
-    serialio.c_lflag = 0;
-    serialio.c_cc[VTIME] = 0; 
-    serialio.c_cc[VMIN] = 1;
-
-    cfmakeraw(&serialio);
-
-    tcflush (fd, TCIFLUSH );            // flush mode mline
-    tcsetattr(fd, TCSANOW, &serialio );   // port attr setting
-
-    return fd;
->>>>>>> master
 }
 
