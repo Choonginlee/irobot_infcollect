@@ -615,41 +615,20 @@ void retrieveEncoder()
 		if(IROBOT_PACKET_SIZE_SENSORS != read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS))
 		{		
 			printf("leften : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-			usleep( 1000 );
-			memset(&data_packet, 0, sizeof(data_packet));
-			write(fdIRobot, buf, 2);
+			// usleep( 1000 );
+			// memset(&data_packet, 0, sizeof(data_packet));
+			// write(fdIRobot, buf, 2);
 			continue;
 		}
 		leften = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encLEndTime, NULL);
 
-		encdiff = leftenPrev - leften;
-
-		//Quality assuarance
-		if(leftenPrev != 0)
-		{
-			// except rollover
-			if(encdiff > -65000 && encdiff < 65000)
-			{
-				// strange value happens retrieve again.
-				if(encdiff > 200 | encdiff < -200)
-				{
-					usleep( 1000 );
-					memset(&data_packet, 0, sizeof(data_packet));
-					write(fdIRobot, buf, 2);
-					continue;
-				}
-
-			}
-		}
-		//printf("Enddiff : L %d ", encdiff);
-		break;
 	}
 
 	leftenPrev = leften;
 
 	//memset (&data_packet, 0, sizeof(data_packet));
-	usleep( 1000 );
+	// usleep( 1000 );
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
 	
@@ -659,35 +638,13 @@ void retrieveEncoder()
 		{
 			//usleep( 15 * 1000 );
 			printf("righten : invalid packet size! Data : [%x %x] \n", data_packet[0], data_packet[1]);
-			usleep( 1000 );
-			memset(&data_packet, 0, sizeof(data_packet));
-			write(fdIRobot, buf, 2);
+			// usleep( 1000 );
+			// memset(&data_packet, 0, sizeof(data_packet));
+			// write(fdIRobot, buf, 2);
 			continue;
 		}
 		righten = (data_packet[0] << 8) | data_packet[1];
 		gettimeofday(&encREndTime, NULL);
-
-		encdiff = rightenPrev - righten;
-
-		//Quality assuarance
-		if(rightenPrev != 0)
-		{
-			// except rollover
-			if(encdiff > -65000 && encdiff < 65000)
-			{
-				// strange value happens retrieve again.
-				if(encdiff > 200 | encdiff < -200)
-				{
-					usleep( 1000 );
-					memset(&data_packet, 0, sizeof(data_packet));
-					write(fdIRobot, buf, 2);
-					continue;
-				}
-
-			}
-		}
-
-		//printf("R %d\n", encdiff);
 
 		break;
 	}
@@ -933,8 +890,6 @@ int setIRobot()
 
 	memset( &serialio, 0, sizeof(serialio) );
 	serialio.c_cflag = B115200;   // baud - 115200 
-
-	serialio.c_cflag &= ~CSIZE;
 	serialio.c_cflag |= CS8;      // data bit - 8bit 
 	serialio.c_cflag |= CLOCAL;   // use local comm port 
 	serialio.c_cflag |= CREAD;    // read & write
@@ -942,8 +897,8 @@ int setIRobot()
 	serialio.c_iflag = 0;         // no parity bit
 	serialio.c_oflag = 0;
 	serialio.c_lflag = 0;
-	serialio.c_cc[VTIME] = 1; 
-	serialio.c_cc[VMIN] = 2; 
+	serialio.c_cc[VTIME] = 0; 
+	serialio.c_cc[VMIN] = 1; 
 
 	cfmakeraw(&serialio);
 
