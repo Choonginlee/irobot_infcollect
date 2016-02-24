@@ -605,7 +605,7 @@ void retrieveEncoder()
 	//usleep( 15 * 1000 );
 
 	//memset (&data_packet, '\0', sizeof(data_packet));
-
+    tcflush(fdIRobot, TCIFLUSH);
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
 	write(fdIRobot, buf, 2);
@@ -632,6 +632,7 @@ void retrieveEncoder()
 
 	//memset (&data_packet, 0, sizeof(data_packet));
 	// usleep( 1000 );
+    tcflush(fdIRobot, TCIFLUSH);
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
     read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
