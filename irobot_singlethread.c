@@ -609,7 +609,7 @@ void retrieveEncoder()
 	buf[0] = Sensors;
 	buf[1] = LeftEncoderCounts;
 	write(fdIRobot, buf, 2);
-    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS)
+    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
     leften = (data_packet[0] << 8) | data_packet[1];
     gettimeofday(&encLEndTime, NULL);
 
@@ -634,7 +634,7 @@ void retrieveEncoder()
 	// usleep( 1000 );
 	buf[1] = RightEncoderCounts;
 	write(fdIRobot, buf, 2);
-    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS)
+    read(fdIRobot, data_packet, IROBOT_PACKET_SIZE_SENSORS);
     righten = (data_packet[0] << 8) | data_packet[1];
     gettimeofday(&encREndTime, NULL);
 
